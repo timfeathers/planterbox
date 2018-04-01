@@ -54,10 +54,10 @@ set -- "$z1" "$z2" "$z3"
 env_path="${VENVS_PATH}${2}/"
 proj_path="${PROJS_PATH}${2}/"
 
-trash="${TRASHCAN_PATH}${2}/"
-trash_ve="${trash}ve/"
-trash_proj="${trash}proj/"
-trash_editor="${trash}subl/"
+trash_path="${TRASHCAN_PATH}${2}/"
+trash_ve="${trash_path}ve/"
+trash_proj="${trash_path}proj/"
+trash_editor="${trash_path}subl/"
 
 # copy directories not individual files
 # remove sublime name for generic editor
@@ -361,7 +361,7 @@ m_restore () {
 		copy_file true "$trash_ve" "$env_path" || trip=true
 		### delete trash folder
 		if [ $trip = false ]; then #necc really??
-			remove_file "true" "$trash"
+			remove_file "true" "$trash_path"
 			succ "Restored:" "$1"
 		else
 			lert "Something happened, kept in trash:" "$1"
