@@ -56,12 +56,12 @@ proj_path="${PROJS_PATH}${2}/"
 trash_path="${TRASHCAN_PATH}${2}/"
 trash_venv="${trash_path}ve/"
 trash_proj="${trash_path}proj/"
-trash_editor="${trash_path}subl/"
+trash_edit="${trash_path}subl/"
 
 # copy directories not individual files
 # remove sublime name for generic editor
-trash_subl_proj="$trash_editor$2.sublime-project"
-trash_subl_work="$trash_editor$2.sublime-workspace"
+trash_subl_proj="$trash_edit$2.sublime-project"
+trash_subl_work="$trash_edit$2.sublime-workspace"
 subl_proj_path="$SUBL_PROJS_PATH$2.sublime-project"
 subl_work_path="$SUBL_PROJS_PATH$2.sublime-workspace"
 
@@ -308,11 +308,11 @@ m_create () {
 m_remove () {	
 	if [ "$COLLECT_TRASH" = true ]; then
 	# Send to trash
-		mkdir "$trash_venv" "$trash_proj" "$trash_editor"
+		mkdir "$trash_venv" "$trash_proj" "$trash_edit"
 		error_chk "Unable to create trash directories"
-		copy_file "$RM_SUBL_FILES" "$subl_proj_path" "$trash_editor" || return 1
+		copy_file "$RM_SUBL_FILES" "$subl_proj_path" "$trash_edit" || return 1
 		remove_file true "$subl_proj_path" || return 1
-		copy_file "$RM_SUBL_FILES" "$subl_work_path" "$trash_editor" || return 1
+		copy_file "$RM_SUBL_FILES" "$subl_work_path" "$trash_edit" || return 1
 		remove_file true "$subl_work_path" || return 1
 		copy_file "$RM_PROJ_FILES" "${proj_path}." "$trash_proj" || return 1
 		remove_file "$RM_PROJ_FILES" "$proj_path" || return 1
