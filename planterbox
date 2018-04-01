@@ -34,13 +34,14 @@ taken_names=("" "blank" "-l" "l" "ls" "--list" "list" \
 #
 # -------------------------------------------------------------------------------
 # Load config file, composed of user-defined Constants and Utilities.
-VERSION='timve 1.0'
+VERSION='planterbox 1.0'
 #CONFIG='/Users/tim/Projects/planterbox/planterbox.config'
 #TILS='/Users/tim/Projects/planterbox/utils'
-CONFIG='./planterbox.config'
-UTILS='./utils'
-source $CONFIG
-source $UTILS #needs to have .sh ext and not be executable, timve should lose .sh
+BASE_P="${BASH_SOURCE%/*}/" #could test is dir: if [[ ! -d "$BASE_P" ]]; then BASE_P="$PWD"; fi
+CONFIG="${BASE_P}planterbox.config"
+UTILS="${BASE_P}utils"
+source "$CONFIG"
+source "$UTILS" #needs to have .sh ext and not be executable, timve should lose .sh
 
 # Remove slashes from all CL args. For tab autocomplete because we are tabbing
 # for directories. Done here before arguments are touched anywhere else.
@@ -108,7 +109,7 @@ print_div () {
 start_temp () { 
 	local condition="$1"
 	if [ "$condition" = true ]; then
-		printf "\\n %b* TIMVE %b%s%b%s%b \\n" "$LC" "$TC" "$2" "$EC" "$3" "$NC"
+		printf "\\n %b* planterbox %b%s%b%s%b \\n" "$LC" "$TC" "$2" "$EC" "$3" "$NC"
 		print_div
 	fi
 }
