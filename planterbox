@@ -53,9 +53,8 @@ set -- "$z1" "$z2" "$z3"
 # * refacto{r; new name scheme
 env_path="${VENVS_PATH}${2}/"
 proj_path="${PROJS_PATH}${2}/"
-
 trash_path="${TRASHCAN_PATH}${2}/"
-trash_ve="${trash_path}ve/"
+trash_venv="${trash_path}ve/"
 trash_proj="${trash_path}proj/"
 trash_editor="${trash_path}subl/"
 
@@ -309,7 +308,7 @@ m_create () {
 m_remove () {	
 	if [ "$COLLECT_TRASH" = true ]; then
 	# Send to trash
-		mkdir "$trash_ve" "$trash_proj" "$trash_editor"
+		mkdir "$trash_venv" "$trash_proj" "$trash_editor"
 		error_chk "Unable to create trash directories"
 		copy_file "$RM_SUBL_FILES" "$subl_proj_path" "$trash_editor" || return 1
 		remove_file true "$subl_proj_path" || return 1
@@ -317,7 +316,7 @@ m_remove () {
 		remove_file true "$subl_work_path" || return 1
 		copy_file "$RM_PROJ_FILES" "${proj_path}." "$trash_proj" || return 1
 		remove_file "$RM_PROJ_FILES" "$proj_path" || return 1
-		copy_file "$RM_VENV_FILES" "${env_path}." "$trash_ve" || return 1
+		copy_file "$RM_VENV_FILES" "${env_path}." "$trash_venv" || return 1
 		remove_file "$RM_VENV_FILES" "$env_path" || return 1
 		succ "Removed VE:" "$1"
 	else
@@ -358,7 +357,7 @@ m_restore () {
 		copy_file "$RM_SUBL_FILES" "$trash_subl_proj" "$SUBL_PROJS_PATH" || trip=true
 		copy_file "$RM_SUBL_FILES" "$trash_subl_work" "$SUBL_PROJS_PATH" || trip=true
 		copy_file "$RM_PROJ_FILES" "$trash_proj" "$proj_path" || trip=true
-		copy_file true "$trash_ve" "$env_path" || trip=true
+		copy_file true "$trash_venv" "$env_path" || trip=true
 		### delete trash folder
 		if [ $trip = false ]; then #necc really??
 			remove_file "true" "$trash_path"
