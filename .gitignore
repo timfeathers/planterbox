@@ -29,3 +29,9 @@ Temporary Items
 
 # for identifying folder as a project
 .timve
+
+editor/
+templates/
+trash/
+venvs/
+archive/
