@@ -36,8 +36,6 @@ taken_names=("" "blank" "-l" "l" "ls" "--list" "list" \
 # Load config file, composed of user-defined Constants and Utilities.
 BASE_P="${BASH_SOURCE%/*}/" #could test is dir: if [[ ! -d "$BASE_P" ]]; then BASE_P="$PWD"; fi
 VERSION='planterbox 1.0'
-#CONFIG='/Users/tim/Projects/planterbox/planterbox.config'
-#TILS='/Users/tim/Projects/planterbox/utils'
 CONFIG="${BASE_P}planterbox.config"
 UTILS="${BASE_P}utils"
 source "$CONFIG"
@@ -58,12 +56,16 @@ trash_venv="${trash_path}ve/"
 trash_proj="${trash_path}proj/"
 trash_edit="${trash_path}subl/"
 
+
+templ_path="${TEMPLATES_PATH}${3}/"
+templ_default="${TEMPLATES_PATH}default/"
+
 # copy directories not individual files
 # remove sublime name for generic editor
-trash_subl_proj="$trash_edit$2.sublime-project"
-trash_subl_work="$trash_edit$2.sublime-workspace"
-subl_proj_path="$SUBL_PROJS_PATH$2.sublime-project"
-subl_work_path="$SUBL_PROJS_PATH$2.sublime-workspace"
+trash_subl_proj="${trash_edit}${2}.sublime-project"
+trash_subl_work="${trash_edit}${2}.sublime-workspace"
+subl_proj_path="${SUBL_PROJS_PATH}${2}.sublime-project"
+subl_work_path="${SUBL_PROJS_PATH}${2}.sublime-workspace"
 
 # common formatting strings shortened.
 # success and alert used in feedback, the rest in help and blank ve command.
@@ -74,9 +76,7 @@ NN="(${EC}number${NC})"
 NM="(${EC}name${NC})"
 NME="(${EC}name of env${NC})"
 NMC="(${EC}copy name${NC})"
-#success="${SC}[${NC}success${SC}]${NC}"
 success="[${LC}success${NC}]"
-#alert="${AC}[${NC}alert${AC}]${NC}"
 alert="[${EC}alert${NC}]"
 
 #
@@ -261,7 +261,14 @@ m_create () {
 
 	### Make Project Folder
 	make_dir "$MAKE_PROJ_FOLDER" "$proj_path" || return 1
-	copy_file "$USE_SKELETON_PROJ" "$SKELETON_PROJ_PATH" "$proj_path" || return 1
+
+	### check for template
+	if [ "$2" = "" ]; then
+		copy_file "$USE_TEMPLATES" "$templ_default" "$proj_path" || return 1
+	else
+		copy_file "$USE_TEMPLATES" "$templ_path" "$proj_path" || return 1
+	fi
+
 	rollback="$rollback $proj_path"
 
 	### Make Subl Files
@@ -424,7 +431,7 @@ main () {
 					print_taken "$2"
 					return 1
 				else
-					m_create "$2" || return 1
+					m_create "$2" "$3" || return 1
 					update_dotfile "$proj_path" "$1" "$2" "$3" || return 1				
 					git_init "$2" || return 1
 				fi
