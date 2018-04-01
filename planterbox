@@ -35,8 +35,10 @@ taken_names=("" "blank" "-l" "l" "ls" "--list" "list" \
 # -------------------------------------------------------------------------------
 # Load config file, composed of user-defined Constants and Utilities.
 VERSION='timve 1.0'
-CONFIG='/Users/tim/Projects/timve/timve.config'
-UTILS='/Users/tim/Projects/timve/utils'
+#CONFIG='/Users/tim/Projects/planterbox/planterbox.config'
+#TILS='/Users/tim/Projects/planterbox/utils'
+CONFIG='./planterbox.config'
+UTILS='./utils'
 source $CONFIG
 source $UTILS #needs to have .sh ext and not be executable, timve should lose .sh
 
