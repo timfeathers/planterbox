@@ -34,10 +34,10 @@ taken_names=("" "blank" "-l" "l" "ls" "--list" "list" \
 #
 # -------------------------------------------------------------------------------
 # Load config file, composed of user-defined Constants and Utilities.
+BASE_P="${BASH_SOURCE%/*}/" #could test is dir: if [[ ! -d "$BASE_P" ]]; then BASE_P="$PWD"; fi
 VERSION='planterbox 1.0'
 #CONFIG='/Users/tim/Projects/planterbox/planterbox.config'
 #TILS='/Users/tim/Projects/planterbox/utils'
-BASE_P="${BASH_SOURCE%/*}/" #could test is dir: if [[ ! -d "$BASE_P" ]]; then BASE_P="$PWD"; fi
 CONFIG="${BASE_P}planterbox.config"
 UTILS="${BASE_P}utils"
 source "$CONFIG"
@@ -50,17 +50,18 @@ set -- "$z1" "$z2" "$z3"
 
 # build from constants all paths needed for script to operate,
 # no-matter if they are unused.
-# * refactor; new name scheme
-env_path="$VENVS_PATH$2/"
-trash_path="$VENVS_TRASH_PATH$2/"
-trash_ve_path="${trash_path}ve/"
-trash_proj_path="${trash_path}proj/"
-trash_subl_path="${trash_path}subl/"
+# * refacto{r; new name scheme
+env_path="${VENVS_PATH}${2}/"
+proj_path="${PROJS_PATH}${2}/"
+trash="${TRASH_PATH}${2}/"
+trash_ve="${trash}ve/"
+trash_proj="${trash}proj/"
+trash_editor="${trash}subl/"
 
-trash_subl_proj="$trash_subl_path$2.sublime-project"
-trash_subl_work="$trash_subl_path$2.sublime-workspace"
-
-proj_path="$PROJS_PATH$2/"
+# copy directories not individual files
+# remove sublime name for generic editor
+trash_subl_proj="$trash_editor$2.sublime-project"
+trash_subl_work="$trash_editor$2.sublime-workspace"
 subl_proj_path="$SUBL_PROJS_PATH$2.sublime-project"
 subl_work_path="$SUBL_PROJS_PATH$2.sublime-workspace"
 
@@ -307,15 +308,15 @@ m_create () {
 m_remove () {	
 	if [ "$COLLECT_TRASH" = true ]; then
 	# Send to trash
-		mkdir "$trash_ve_path" "$trash_proj_path" "$trash_subl_path"
+		mkdir "$trash_ve" "$trash_proj" "$trash_editor"
 		error_chk "Unable to create trash directories"
-		copy_file "$RM_SUBL_FILES" "$subl_proj_path" "$trash_subl_path" || return 1
+		copy_file "$RM_SUBL_FILES" "$subl_proj_path" "$trash_editor" || return 1
 		remove_file true "$subl_proj_path" || return 1
-		copy_file "$RM_SUBL_FILES" "$subl_work_path" "$trash_subl_path" || return 1
+		copy_file "$RM_SUBL_FILES" "$subl_work_path" "$trash_editor" || return 1
 		remove_file true "$subl_work_path" || return 1
-		copy_file "$RM_PROJ_FILES" "${proj_path}." "$trash_proj_path" || return 1
+		copy_file "$RM_PROJ_FILES" "${proj_path}." "$trash_proj" || return 1
 		remove_file "$RM_PROJ_FILES" "$proj_path" || return 1
-		copy_file "$RM_VENV_FILES" "${env_path}." "$trash_ve_path" || return 1
+		copy_file "$RM_VENV_FILES" "${env_path}." "$trash_ve" || return 1
 		remove_file "$RM_VENV_FILES" "$env_path" || return 1
 		succ "Removed VE:" "$1"
 	else
@@ -355,11 +356,11 @@ m_restore () {
 		### restore project from trash
 		copy_file "$RM_SUBL_FILES" "$trash_subl_proj" "$SUBL_PROJS_PATH" || trip=true
 		copy_file "$RM_SUBL_FILES" "$trash_subl_work" "$SUBL_PROJS_PATH" || trip=true
-		copy_file "$RM_PROJ_FILES" "$trash_proj_path" "$proj_path" || trip=true
-		copy_file true "$trash_ve_path" "$env_path" || trip=true
+		copy_file "$RM_PROJ_FILES" "$trash_proj" "$proj_path" || trip=true
+		copy_file true "$trash_ve" "$env_path" || trip=true
 		### delete trash folder
 		if [ $trip = false ]; then #necc really??
-			remove_file "true" "$trash_path"
+			remove_file "true" "$trash"
 			succ "Restored:" "$1"
 		else
 			lert "Something happened, kept in trash:" "$1"
@@ -413,8 +414,8 @@ main () {
 				m_list "$VENVS_PATH" "$2"
 	        	;;
 	        -t | t | --trash | trash)
-				start_temp true "Trash Directory: " "$VENVS_TRASH_PATH"
-				m_list "$VENVS_TRASH_PATH" "$2"
+				start_temp true "Trash Directory: " "$TRASH_PATH"
+				m_list "$TRASH_PATH" "$2"
 	        	;;
 	        -c | c | --create | create)
 				start_temp "$VERBOSE" "Creating new Virtual Env: " "$2"
@@ -432,7 +433,7 @@ main () {
 				m_cd "$2"
 	            ;;	            
 	        -s | s | --search | search)
-				start_temp true "Searching Trash for: " "$2" && m_list "$VENVS_TRASH_PATH" "$2"
+				start_temp true "Searching Trash for: " "$2" && m_list "$TRASH_PATH" "$2"
 				start_temp true "Searching Virtual Envs for: " "$2" && m_list "$VENVS_PATH" "$2"
 	            ;;	            
 	        -cpy | cpy | --copy | copy) # 'cp' conflicts
@@ -443,7 +444,7 @@ main () {
 	        -rm | rm | --remove | remove)
 				start_temp "$VERBOSE" "Removing Virtual Env: " "$2"
 				m_remove "$2"
-				[ "$COLLECT_TRASH" = true ] && update_dotfile "$trash_proj_path" "$1" "$2" "$3"
+				[ "$COLLECT_TRASH" = true ] && update_dotfile "$trash_proj" "$1" "$2" "$3"
 	            ;;
 	        -r | r | --restore | restore)
 				start_temp "$VERBOSE" "Restoring Virtual Env: " "$2"
