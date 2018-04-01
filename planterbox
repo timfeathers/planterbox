@@ -53,7 +53,8 @@ set -- "$z1" "$z2" "$z3"
 # * refacto{r; new name scheme
 env_path="${VENVS_PATH}${2}/"
 proj_path="${PROJS_PATH}${2}/"
-trash="${TRASH_PATH}${2}/"
+
+trash="${TRASHCAN_PATH}${2}/"
 trash_ve="${trash}ve/"
 trash_proj="${trash}proj/"
 trash_editor="${trash}subl/"
@@ -414,8 +415,8 @@ main () {
 				m_list "$VENVS_PATH" "$2"
 	        	;;
 	        -t | t | --trash | trash)
-				start_temp true "Trash Directory: " "$TRASH_PATH"
-				m_list "$TRASH_PATH" "$2"
+				start_temp true "Trash Directory: " "$TRASHCAN_PATH"
+				m_list "$TRASHCAN_PATH" "$2"
 	        	;;
 	        -c | c | --create | create)
 				start_temp "$VERBOSE" "Creating new Virtual Env: " "$2"
@@ -433,7 +434,7 @@ main () {
 				m_cd "$2"
 	            ;;	            
 	        -s | s | --search | search)
-				start_temp true "Searching Trash for: " "$2" && m_list "$TRASH_PATH" "$2"
+				start_temp true "Searching Trash for: " "$2" && m_list "$TRASHCAN_PATH" "$2"
 				start_temp true "Searching Virtual Envs for: " "$2" && m_list "$VENVS_PATH" "$2"
 	            ;;	            
 	        -cpy | cpy | --copy | copy) # 'cp' conflicts
