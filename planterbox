@@ -36,7 +36,7 @@ taken_names=("" "blank" "-l" "l" "ls" "--list" "list" \
 # Load config file, composed of user-defined Constants and Utilities.
 BASE_P="${BASH_SOURCE%/*}/" #could test is dir: if [[ ! -d "$BASE_P" ]]; then BASE_P="$PWD"; fi
 VERSION='planterbox 1.0'
-CONFIG="${BASE_P}planterbox.config"
+CONFIG="${BASE_P}planterbox.cfg"
 UTILS="${BASE_P}utils"
 source "$CONFIG"
 source "$UTILS" #needs to have .sh ext and not be executable, timve should lose .sh
