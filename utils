@@ -1,0 +1,227 @@
+#!/bin/bash
+# ===============================================================================
+# Clive ve for a name? find undefined
+# ===============================================================================
+# Utils
+#
+# script is becoming too large, seperate aspects for now o mo?
+# put things here not often changed or considered.
+# and source
+#
+## going through copies from timve.sh
+
+
+#
+# ===============================================================================
+#  Errors
+#
+# -------------------------------------------------------------------------------
+# Test whether the last command retuned an error, and return accordingly.  
+# Prints success or failure. And on failure, appends to error log.
+#	error_msg="$1"
+#	success_msg="$2"
+#	subject="$3"
+# $? must be the very first command
+error_chk () {
+	if [ "$?" -eq 0 ]; then
+		### No error
+		if [ "$2" != "" ] && [ "$VERBOSE" == "true" ]; then
+			succ "$2" "$3" 
+		fi		
+		return 0
+	else 
+		lert "$1" "$3"
+		error_log_it "$1" "$3"
+		return 1
+	fi	
+}
+
+#
+# ===============================================================================
+#  File/os
+#
+# -------------------------------------------------------------------------------
+# Remove a list of paths. Maybe this isn't useful or used anymore?
+# Takes a a string of paths as asg
+# used to rollback file creation on problem
+rm_paths () { 
+	for p in "$@"
+	do
+		rm -r "$p"
+		error_chk "Unable to remove path:" "Removed:" "$p"
+	done
+}
+
+# Delete file/folder recursive. Takes a condition, but can pass 'true' if
+# no condition is needed.
+remove_file () {
+	local condition="$1"	
+	local delete_from="$2"
+
+	if [ "$condition" == "true" ]; then
+		rm -r "$delete_from"
+		error_chk "Unable to remove path:" "Removed:" "$delete_from" && return 0 || return 1
+	else
+		return 0
+	fi
+}
+
+# Copy file/folder. Takes a condition, but can pass 'true' if no condition 
+# is needed.
+copy_file () {
+	#can just pass 'true' if no condition needed.
+	local condition="$1"	
+	local copy_from="$2"
+	local copy_to="$3"
+
+	if [ "$condition" == "true" ]; then
+		cp -R "$copy_from" "$copy_to" >/dev/null
+		error_chk "Unable to copy path:" "Copied:" "$copy_from" && return 0 || return 1
+	else
+		return 0
+	fi
+}
+
+# Make directory. Takes a condition, but can pass 'true' if no condition is
+# needed. I don't know if implemented or needed with use of cp.
+make_dir () {
+	local condition="$1"	
+	local path="$2"
+
+	if [ "$condition" == "true" ]; then
+		mkdir "$path"
+		error_chk "Unable to create path:" "Created:" "$path" && return 0
+	else
+		return 1
+	fi
+}
+
+# List directory. Takes a condition, but can pass 'true' if no condition is
+# needed. I don't know if needed??
+# not used??? remove?
+ls_dirs () {
+	local condition="$1"
+	local path="$2"
+
+	if [ "$condition" == "true" ]; then
+		find . -mindepth 1 -maxdepth 1 -type d | sort
+		error_chk "Unable to list path:" "" "$path" && return 0 #not evaling find?
+	else
+		return 1
+	fi
+}
+
+# change directory. Takes a condition, but can pass 'true' if no condition is
+# needed. use to switch to project path
+ch_dir () {
+	local condition="$1"
+	local path="$2"
+
+	if [ "$condition" == "true" ]; then
+		cd "$path"
+		error_chk "Unable to change directory:" "" "$path" && return 0 || return 1
+	else
+		return 1
+	fi
+}
+
+# ===============================================================================
+#  Misc.
+#
+# -------------------------------------------------------------------------------
+# search array for string, return 0 or 1
+# takes a string and an array
+# snippet
+#	array_contains "help" "${taken_names[@]}" && echo yes || echo no	
+array_contains () {
+    local seeking=$1; shift
+    local in=1
+    for element; do
+        if [[ $element == "$seeking" ]]; then
+            in=0
+            break
+        fi
+    done
+    return $in
+}
+
+# Prompt to continue. Use for removing files
+yes_no () {
+	#local message="$1"
+	#printf "   %b %bFiles will be sent to system trash.%b Continue %by%b/%bn%b\? " "$alert" "$TC" "$NC" "$LB" "$LC" "$NC" "$RB"
+	read -p "" CONT #need the blank msg?
+	#read -p " Continue (y/n)?" CONT
+	if [ "$CONT" = "y" ]; then
+	  return 0
+	else
+	  return 1
+	fi
+}
+
+# Build paths -defined in config and needed for script to function- into array, 
+# then check paths against file system.
+check_paths () {
+	# build needed paths and check
+	# $1 is verbose/$EXPLICIT
+	local is_quiet=$1
+	#echo "is quiet = $is_quiet"
+	local app_paths=( 
+		"$BASE_PATH"
+		"$VENVS_PATH"
+		"$ERROR_LOG_PATH"
+		)
+	[ "$MAKE_PROJ_FOLDER" == "true" ] && app_paths+=("$PROJS_PATH")
+	[ "$COLLECT_TRASH" == "true" ] && app_paths+=("$VENVS_TRASH_PATH")
+	[ "$LOG_HISTORY" == "true" ] && app_paths+=("$LOG_PATH")
+	[ "$MAKE_SUBL_FILES" == "true" ] && app_paths+=("$SUBL_PROJS_PATH") 
+	[ "$MAKE_SUBL_FILES" == "true" ] && app_paths+=("$SUBL_PROJ_TEMPLATE")
+	[ "$MAKE_SUBL_FILES" == "true" ] && app_paths+=("$SUBL_WORK_TEMPLATE") 
+
+	for p in "${app_paths[@]}"
+	do
+		if [[ -e $p ]]; then
+			# found file
+			[ "$is_quiet" == "false" ] && succ "found:" "$p"
+		else
+			lert "not found:" "$p"
+			error_log_it "not found:" "$p"
+			return 1
+		fi
+	done
+	[ "$is_quiet" == "false" ] && print_div && new_line
+	return 0
+}
+
+# gets current loaded env
+get_current_env () {
+	# Get Virtual Env
+	if [[ $VIRTUAL_ENV != "" ]]
+	    then
+	      # Strip out the path and just leave the env name
+	      current_env="${VIRTUAL_ENV##*/}"
+	else
+	      # In case you don't have one activated
+	      current_env=''
+	fi
+}
+
+git_init () {
+	if [ "$GIT_ON_CREATE" == "true" ]; then
+		git init "$proj_path"
+		#git add "$proj_path"
+		git add .
+		git commit -m "First Commit."
+		error_chk "Problem with GIT:" "init'ed:${BOLD_WHITE}<> ${GIT_COLOR}git ${NC}repository" "$1"
+		chmod -R +w "$proj_path" #make git files writable
+	fi
+}
+
+
+
+
+
+
+
+
+
+

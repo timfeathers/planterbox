@@ -1,0 +1,489 @@
+#!/bin/bash
+# ===============================================================================
+# Virtual Environment Utility - PlanterBox 
+# ===============================================================================
+# This file must be used with "source path/ve.sh" *from bash*
+# you cannot run it directly. (from venv activate script,.. applies)
+#
+# The script itself must be sourced to run correctly.
+# 
+# Add the following line to .bash_profile or .bashrc to employ the 've' alias
+# 	alias ve="source /Users/tim/Projects/timve/timve.sh $1 $2"
+# 	or?: export cmd..
+# 
+# -------------------------------------------------------------------------------
+# List of unavailable venv names(being used as keywords: 
+# (aliases and built-ins? problem too)
+#
+# Because script takes as a first argument either a command, OR the name of a 
+# virtual env to be loaded, the two can't be equal. The payoff is shorthand load commands
+# like 've tacoApp' rather than 've load tacoApp'. These keywords are forbidden:
+taken_names=("" "blank" "-l" "l" "ls" "--list" "list" \
+	"-t" "t" "--trash" "trash" \
+	"-c" "c" "--create" "create" \
+	"-cd" "cd" "--chdir" "chdir" \
+	"-s" "s" "--search" "search" \
+	"-cpy" "cpy" "--copy" "copy" \
+	"-rm" "rm" "--remove" "remove" \
+	"-r" "r" "restore" "restore" \
+	"-h" "h" "--help" "help" \
+	"-p" "p" "--paths" "paths" \
+	"-v" "v" "--version" "version" \
+	"-hs" "hs" "-hist" "hist" "--history" "history")
+
+#
+# -------------------------------------------------------------------------------
+# Load config file, composed of user-defined Constants and Utilities.
+VERSION='timve 1.0'
+CONFIG='/Users/tim/Projects/timve/timve.config'
+UTILS='/Users/tim/Projects/timve/utils'
+source $CONFIG
+source $UTILS #needs to have .sh ext and not be executable, timve should lose .sh
+
+# Remove slashes from all CL args. For tab autocomplete because we are tabbing
+# for directories. Done here before arguments are touched anywhere else.
+z1="${1%/}" && z2="${2%/}" && z3="${3%/}"
+set -- "$z1" "$z2" "$z3"
+
+# build from constants all paths needed for script to operate,
+# no-matter if they are unused.
+# * refactor; new name scheme
+env_path="$VENVS_PATH$2/"
+trash_path="$VENVS_TRASH_PATH$2/"
+trash_ve_path="${trash_path}ve/"
+trash_proj_path="${trash_path}proj/"
+trash_subl_path="${trash_path}subl/"
+
+trash_subl_proj="$trash_subl_path$2.sublime-project"
+trash_subl_work="$trash_subl_path$2.sublime-workspace"
+
+proj_path="$PROJS_PATH$2/"
+subl_proj_path="$SUBL_PROJS_PATH$2.sublime-project"
+subl_work_path="$SUBL_PROJS_PATH$2.sublime-workspace"
+
+# common formatting strings shortened.
+# success and alert used in feedback, the rest in help and blank ve command.
+# cant use readonly because file must be sourced(cant switch envs?)
+LB="${LC}[${NC}"
+RB="${LC}]${NC}"
+NN="(${EC}number${NC})"
+NM="(${EC}name${NC})"
+NME="(${EC}name of env${NC})"
+NMC="(${EC}copy name${NC})"
+#success="${SC}[${NC}success${SC}]${NC}"
+success="[${LC}success${NC}]"
+#alert="${AC}[${NC}alert${AC}]${NC}"
+alert="[${EC}alert${NC}]"
+
+#
+# ===============================================================================
+#  Formatting functions
+#
+#
+# template for alert message
+# takes a message, a variable, and suppress newline condition
+lert () {
+	local end="\\n"
+	[ "$3" = true ] && end="" #suppress newline	
+	printf " %b %b%b%b %b%b" "$alert" "$TC" "$1" "$NC" "$2" "$end"
+}
+# template for success message
+succ () {
+	printf " %b %b%b%b %b\\n" "$success" "$TC" "$1" "$NC" "$2"
+}
+# indent output by piping through sed. take the indent as param
+dent () {
+	local margin="${1:- * }"
+	sed "s/^/${margin}/"
+}
+
+# print a divider    
+print_div () {
+	#printf "%b ---------------------------------------------------------%b\\n" "$LC" "$NC"
+	printf "%b ---------------------------------------------------------------------%b\\n" "$LC" "$NC"
+}
+# template to begin output of commands.
+start_temp () { 
+	local condition="$1"
+	if [ "$condition" = true ]; then
+		printf "\\n %b* TIMVE %b%s%b%s%b \\n" "$LC" "$TC" "$2" "$EC" "$3" "$NC"
+		print_div
+	fi
+}
+# new line printed
+new_line () {
+	printf "\\n"	
+}
+# print short help section
+print_help_short () {
+	printf " %b list:%b ve list \\t    %b create:%b ve create %b\\n" "$LC" "$NC" "$LC" "$NC" "$NME"
+	printf " %b load:%b ve %b    %b remove:%b ve remove %b\\n" "$LC" "$NC" "$NME" "$LC" "$NC" "$NME"
+	#new_line
+	#printf " %b For expanded commands and options:%b ve help\\n" "$TC" "$NC"
+	new_line
+}
+
+# print detailed help section
+print_help () {
+	printf " %-14b  %30b  %-40b \\n" "${LB} ${RB}" "${TC} Load virtual env:" "${NC}   ve ${NM}"
+	printf " %-14b  %30b  %-40b \\n" "${LB}l${RB}" "${TC} List virtual envs:" "${NC}   ve list"
+	printf " %-14b  %30b  %-40b \\n" "${LB}s${RB}" "${TC} Search virtual envs:" "${NC}   ve search ${NM}"
+	printf " %-14b  %30b  %-40b \\n" "${LB}c${RB}" "${TC} Create virtual env:" "${NC}   ve create ${NM}"
+	printf " %-14b  %30b  %-40b \\n" "${LB}rm${RB}" "${TC} Remove virtual env: " "${NC}  ve remove ${NM}"
+	printf " %-14b  %30b  %-40b \\n" "${LB}t${RB}" "${TC} List trash:" "${NC}   ve trash"
+	printf " %-14b  %30b  %-40b \\n" "${LB}r${RB}" "${TC} Restore virtual env:" "${NC}   ve restore ${NM}"
+	printf " %-14b  %30b  %-40b \\n" "${LB}cpy${RB}" "${TC} Copy virtual env:  " "${NC} ve copy ${NM} ${NMC}"
+	printf " %-14b  %30b  %-40b \\n" "${LB}h${RB}" "${TC} Help:" "${NC}   ve help"
+	printf " %-14b  %30b  %-40b \\n" "${LB}p${RB}" "${TC} Check paths:" "${NC}   ve paths"
+	printf " %-14b  %30b  %-40b \\n" "${LB}hist${RB}" "${TC} History:   " "${NC}ve history"
+	printf " %-14b  %30b  %-40b \\n" "${LB}cd${RB}" "${TC} CD to project: " "${NC}  ve cd"
+	print_div
+	printf "%b\\n" "  ${TC} * ${LB}source ve.sh list${RB} ${TC}can become ${LB}ve l${RB} ${TC}with alias"
+	new_line	
+}
+# Print usage
+print_help2() {
+  echo -n "${scriptName} [OPTION]... [FILE]...
+
+This is my script template.
+
+ Options:
+  l, ls, --list, list 	List virtual environments.
+  t, --trash, trash 	List virtual environments in trash.
+  c, --create, create 	Create new virtual environment and extras.
+  cd, --chdir, chdir 	Change directory to current 
+
+  -u, --username    Username for script
+  -p, --password    User password
+  --force           Skip all user interaction.  Implied 'Yes' to all actions.
+  -q, --quiet       Quiet (no output)
+  -l, --log         Print log to file
+  -s, --strict      Exit script with null variables.  i.e 'set -o nounset'
+  -v, --verbose     Output more information. (Items echoed to 'verbose')
+  -d, --debug       Runs script in BASH debug mode (set -x)
+  -h, --help        Display this help and exit
+      --version     Output version information and exit
+"
+}
+# print list of unavailable names/keywords
+print_taken () {
+	lert "Sorry!" "The following can't be used for a name:\\n" 
+	printf '%s \n' "${taken_names[@]}" | dent "  " | column
+}
+# returns timestamp according to formats in config. Takes spacer string.
+timestamp () {
+	spacer="$1"
+	date +"$DATE_FORMAT$spacer$TIME_FORMAT"
+}
+# Record errors to log. 
+# * lineno not working? needs to be passed at the line?
+error_log_it () {
+	printf "%b\\t%b\\t%b\\t%b\\t%b\\t%b\\t \\n" "ERROR" "line:$LINENO" "$USER" "$(timestamp " ")" "$1" "$2" >> "$ERROR_LOG_PATH"
+}
+# Record history of commands to file when log enabed. 
+log_it () {
+	if $LOG_HISTORY; then
+		printf "%b\\t%b\\t%b\\t%b\\t%b\\t\\n" "$USER" "$(timestamp "\\t")" "$1" "$2" "$3" >> "$LOG_PATH"
+	fi
+}
+# Record history of commands for a project. this file identifies a project.
+update_dotfile () {
+
+	proj_log="${1}.timve"
+	printf "%b\\t%b\\t%b\\t%b\\t%b\\n" "$(timestamp "\\t")" "$USER" "$2" "$3" "$4" >> "$proj_log"
+}
+
+#
+# ===============================================================================
+#  Command functions
+#
+# List a directory: used for Envs and trash.
+# cd to that directory for tab-completion.
+# ls dirs, pipe to indent()
+# tail formatting, print total number of records.
+# * expand with wildcards at $2? --> have done a search 
+m_list () {
+	local path="$1"
+	local search="$2"
+	local count=""
+
+	ch_dir "$CD_TO_LS" "$path"
+
+	if [ "$search" = "" ]; then
+		ls_dirs true "$path" | dent " " | pr -t -3 -w70
+		count="$(ls_dirs true "$path" | wc -l | xargs)" #xargs for easy trim		
+	else
+		ls_dirs true "$path"| grep "$search" | pr -t -3 -w70
+		count="$(ls_dirs true "$path" | grep "$search" | wc -l | xargs)"		
+	fi
+
+	print_div
+	printf " %b* %b%b total" "$LC" "$NC" "$count"
+	printf "%b  - For expanded commands and options:%b ve help\\n" "$TC" "$NC"
+	new_line
+	
+}
+
+# Source the venv script to activate virtual environment
+# * don't think i'm capturing error correctly from venv.
+m_load () {
+	source "${VENVS_PATH}${1}/bin/activate"	# 3>&1 1>&2 2>&3 | tee -a $ERROR_LOG_PATH
+	error_chk "Unable to load:" "Switched to Virtual Env:" "$1"
+}
+
+# cd to project name taken, or the current env if empty
+m_cd () {
+	get_current_env # sets $current_env.
+	local condition="$1"
+	local name="$2"
+
+	if [ "$name" = "" ]; then
+		cd "$PROJS_PATH$current_env"
+		error_chk "Unable to cd:" "Changed directory:" "$current_env" && return 0
+	else
+		cd "$PROJS_PATH$name"
+		error_chk "Unable to cd:" "Changed directory:" "$name" && return 0
+		return 1
+	fi
+}
+
+# Create new environment consisting from these elements and options:
+#  - venv python3 virtual environment: load on create
+#  - project folder: can be populated by contents of a default  
+#  - sublime text project and workspace files: customized
+# TODO: decide about using a trip, vs rollback
+m_create () {
+	rollback=""
+
+	### Make Project Folder
+	make_dir "$MAKE_PROJ_FOLDER" "$proj_path" || return 1
+	copy_file "$USE_SKELETON_PROJ" "$SKELETON_PROJ_PATH" "$proj_path" || return 1
+	rollback="$rollback $proj_path"
+
+	### Make Subl Files
+	if copy_file "$MAKE_SUBL_FILES" "$SUBL_PROJ_TEMPLATE" "$subl_proj_path"; then
+		rollback="${rollback} ${subl_proj_path}"
+		sed -i "" "s/${SUBL_TEMPLATE_STRING}/${1}/g" "$subl_proj_path"
+		error_chk "Unable to update project template"			
+	else
+		rm_paths "$rollback"
+		return 1
+	fi
+	if copy_file "$MAKE_SUBL_FILES" "$SUBL_WORK_TEMPLATE" "$subl_work_path"; then
+		rollback="${rollback} ${subl_work_path}"
+		sed -i "" "s/${SUBL_TEMPLATE_STRING}/${1}/g" "$subl_work_path"
+		error_chk "Unable to update project template"			
+	else
+		rm_paths "$rollback" #not use these rollback?
+		return 1
+	fi
+
+	### Create VE and load depending
+	python3 -m venv "$env_path"
+	### ----------------------------
+	#if error_chk "Unable to create Virtual Environment:" "Virtual env created at:" "$env_path"; then
+	if error_chk "Unable to create Virtual Environment:" "Created: ${PY_COLOR}Python${PY2_COLOR}3 ${NC}venv" "$1"; then #gonna have to change back, too much
+		# made un commented changes above last commit
+		#succ "Created ${PY_COLOR}Python 3 venv:" "$1" 
+		#$PYOK="${NC}Created ${PY_COLOR}Python${PY2_COLOR}3 ${NC}venv:"
+		#succ "${NC}Created ${PY_COLOR}Python${PY2_COLOR}3 ${NC}venv:" "${BOLD_WHITE}${1}" 
+		[ "$LOAD_ON_CREATE" = true ] && m_load "$1"		
+		ch_dir "$CD_ON_CREATE" "$proj_path"		
+	else
+		rm_paths "$rollback"
+		return 1
+	fi
+	return 0
+}
+
+# Copy files to script trash, or if trash is not enabled, system remove. 
+# Ask if user if sure?
+# return on any issue, at issue.
+# * currently it stops on fail anywhere along the long, maybe it shouldn't
+# * what behaviour do i want here?
+m_remove () {	
+	if [ "$COLLECT_TRASH" = true ]; then
+	# Send to trash
+		mkdir "$trash_ve_path" "$trash_proj_path" "$trash_subl_path"
+		error_chk "Unable to create trash directories"
+		copy_file "$RM_SUBL_FILES" "$subl_proj_path" "$trash_subl_path" || return 1
+		remove_file true "$subl_proj_path" || return 1
+		copy_file "$RM_SUBL_FILES" "$subl_work_path" "$trash_subl_path" || return 1
+		remove_file true "$subl_work_path" || return 1
+		copy_file "$RM_PROJ_FILES" "${proj_path}." "$trash_proj_path" || return 1
+		remove_file "$RM_PROJ_FILES" "$proj_path" || return 1
+		copy_file "$RM_VENV_FILES" "${env_path}." "$trash_ve_path" || return 1
+		remove_file "$RM_VENV_FILES" "$env_path" || return 1
+		succ "Removed VE:" "$1"
+	else
+	# Actual delete
+		lert "Files will be Deleted. Continue?" "(y/n) " true
+		if yes_no; then
+			remove_file "$RM_SUBL_FILES" "$subl_proj_path" || return 1
+			remove_file "$RM_SUBL_FILES" "$subl_work_path" || return 1
+			remove_file "$RM_PROJ_FILES" "$proj_path" || return 1
+			remove_file "$RM_VENV_FILES" "$env_path" || return 1
+			succ "Deleted VE:" "$1"
+		fi
+	fi
+}
+
+# Make a full copy of env
+# * need to test sed for error
+m_copy () {
+	local old="$1"
+	local new="$2"
+	# maybe let fail without rollback to copy as much as is?
+	copy_file "$MAKE_SUBL_FILES" "${subl_proj_path}" "${SUBL_PROJS_PATH}${new}.sublime-project"
+	sed -i "" "s/$old/$new/g" "${SUBL_PROJS_PATH}${new}.sublime-project"
+	copy_file "$MAKE_SUBL_FILES" "${subl_work_path}" "${SUBL_PROJS_PATH}${new}.sublime-workspace"
+	sed -i "" "s/$old/$new/g" "${SUBL_PROJS_PATH}${new}.sublime-workspace"
+	copy_file "$MAKE_PROJ_FOLDER" "${proj_path}" "${PROJS_PATH}${new}"
+	copy_file "true" "${env_path}" "${VENVS_PATH}${new}"
+}
+
+# Copy full env from the trash back.
+# * integrate comments below
+# TODO: decide about using a trip, vs rollback
+m_restore () {
+	trip=false #in the event of any folder not copy, don't delete?
+	### Collect Trash? should I enforce this?
+	if [ "$COLLECT_TRASH" = true ]; then
+		### restore project from trash
+		copy_file "$RM_SUBL_FILES" "$trash_subl_proj" "$SUBL_PROJS_PATH" || trip=true
+		copy_file "$RM_SUBL_FILES" "$trash_subl_work" "$SUBL_PROJS_PATH" || trip=true
+		copy_file "$RM_PROJ_FILES" "$trash_proj_path" "$proj_path" || trip=true
+		copy_file true "$trash_ve_path" "$env_path" || trip=true
+		### delete trash folder
+		if [ $trip = false ]; then #necc really??
+			remove_file "true" "$trash_path"
+			succ "Restored:" "$1"
+		else
+			lert "Something happened, kept in trash:" "$1"
+		fi
+	else
+		lert "Trash disabled, unable to restore:" "$1"
+	fi
+}
+
+# detailed print of commands and options
+# * more?
+m_help () { #change help and history func names?
+	print_help2
+}
+
+# Print command history -if kept- with the length: default(10), "user defined", all
+m_history () {
+	case $1 in
+	    "")
+			start_temp true "Command history: " "$DEFAULT_HIST"
+			tail "-n$DEFAULT_HIST" "$LOG_PATH" | dent
+			#these are not really checking tail/cat, just indent
+			error_chk "Unable to print history:" "" "$DEFAULT_HIST"
+	        ;;
+	    -a | a | --all | all)
+			start_temp true "Command history: " "COMPLETE"		
+			cat "$LOG_PATH" | dent
+			error_chk "Unable to print history:" "" "COMPLETE"
+	        ;;
+	    *)
+			start_temp true "Command history: " "$1"
+			tail "-n$1" "$LOG_PATH" | dent
+			error_chk "Unable to print history:" "" "$1"
+	    	;;
+	esac
+	print_div
+}
+#
+# ===============================================================================
+#  Main
+#
+# main branch for script.
+# take arguments and route them to appropriate functions. 
+# print start templates when verbose.
+# on blank command, print ve directory and useful commands.
+main () {
+	if [ "$1" != "" ]; then
+	    case $1 in
+	        -l | l | ls | --list | list) #"l" and single letters not working, alias??
+				start_temp true "Virtual Envs Directory: " "$VENVS_PATH"
+				m_list "$VENVS_PATH" "$2"
+	        	;;
+	        -t | t | --trash | trash)
+				start_temp true "Trash Directory: " "$VENVS_TRASH_PATH"
+				m_list "$VENVS_TRASH_PATH" "$2"
+	        	;;
+	        -c | c | --create | create)
+				start_temp "$VERBOSE" "Creating new Virtual Env: " "$2"
+				if array_contains "$2" "${taken_names[@]}"; then #TODO -make own func?
+					lert "Forbidden name/keyword:" "$2"
+					print_taken "$2"
+					return 1
+				else
+					m_create "$2" || return 1
+					update_dotfile "$proj_path" "$1" "$2" "$3" || return 1				
+					git_init "$2" || return 1
+				fi
+	            ;;
+	        -cd | cd | --chdir | chdir)
+				m_cd "$2"
+	            ;;	            
+	        -s | s | --search | search)
+				start_temp true "Searching Trash for: " "$2" && m_list "$VENVS_TRASH_PATH" "$2"
+				start_temp true "Searching Virtual Envs for: " "$2" && m_list "$VENVS_PATH" "$2"
+	            ;;	            
+	        -cpy | cpy | --copy | copy) # 'cp' conflicts
+				start_temp "$VERBOSE" "Copying VE: " "$2 to $3"
+				m_copy "$2" "$3"
+				update_dotfile "${PROJS_PATH}${3}/" "$1" "$2" "$3"
+	            ;;	            
+	        -rm | rm | --remove | remove)
+				start_temp "$VERBOSE" "Removing Virtual Env: " "$2"
+				m_remove "$2"
+				[ "$COLLECT_TRASH" = true ] && update_dotfile "$trash_proj_path" "$1" "$2" "$3"
+	            ;;
+	        -r | r | --restore | restore)
+				start_temp "$VERBOSE" "Restoring Virtual Env: " "$2"
+				m_restore "$2"
+				update_dotfile "$proj_path" "$1" "$2"					
+	            ;;	            
+	        -h | h | --help | help)
+				start_temp true "Help: " "commands and options"
+				m_help
+	            ;;
+	        -p | p | --paths | paths)
+				start_temp true "Paths:" "check 'em while you got 'em"
+				check_paths "false"
+	            ;;	            
+	        -hs | hs | -hist | hist | --history | history)
+				# start_temp is variable, so in history function
+				m_history "$2"
+	            ;;
+	        -v | v | --version | version)
+				printf "%s\\n" "$VERSION"
+	            ;;	            
+	        *)
+				# start_temp true "Switching to Virtual Env: " $1
+				m_load "$1"
+            	;;
+	    esac
+	else
+		start_temp true "Virtual Envs Directory: " "$VENVS_PATH"
+		m_list "$VENVS_PATH"
+		print_help_short
+	fi
+}
+
+# -------------------------------------------------------------------------------
+# check paths, false is for verbose.
+# run main, pass args.
+# log command. (((add $3)))
+#
+# if config paths bad, exit
+check_paths "true" || return 1
+# log next?
+log_it "$1" "$2" "$3"
+# run main
+main "$1" "$2" "$3"
+
+
