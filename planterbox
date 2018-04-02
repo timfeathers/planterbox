@@ -313,7 +313,9 @@ m_create () {
 # return on any issue, at issue.
 # * currently it stops on fail anywhere along the long, maybe it shouldn't
 # * what behaviour do i want here?
-m_remove () {	
+m_remove () {
+	local name="$1"
+
 	if [ "$COLLECT_TRASH" = true ]; then
 	# Send to trash
 		mkdir "$trash_venv" "$trash_proj" "$trash_edit"
@@ -326,7 +328,7 @@ m_remove () {
 		remove_file "$RM_PROJ_FILES" "$proj_path" || return 1
 		copy_file "$RM_VENV_FILES" "${env_path}." "$trash_venv" || return 1
 		remove_file "$RM_VENV_FILES" "$env_path" || return 1
-		succ "Removed VE:" "$1"
+		succ "Removed VE:" "$name"
 	else
 	# Actual delete
 		lert "Files will be Deleted. Continue?" "(y/n) " true
@@ -335,7 +337,7 @@ m_remove () {
 			remove_file "$RM_SUBL_FILES" "$subl_work_path" || return 1
 			remove_file "$RM_PROJ_FILES" "$proj_path" || return 1
 			remove_file "$RM_VENV_FILES" "$env_path" || return 1
-			succ "Deleted VE:" "$1"
+			succ "Deleted VE:" "$name"
 		fi
 	fi
 }
