@@ -227,12 +227,16 @@ m_list () {
 }
 
 # Source the venv script to activate virtual environment
-# * don't think i'm capturing error correctly from venv.
+# * think i'm capturing error correctly now.
 m_load () {
 	local name="$1"
+	local p_path="${PROJS_PATH}${1}/"
 
-	source "${VENVS_PATH}${name}/bin/activate"	# 3>&1 1>&2 2>&3 | tee -a $ERROR_LOG_PATH
-	error_chk "Unable to load:" "Switched to Virtual Env:" "$name"
+	source "${VENVS_PATH}${name}/bin/activate"
+	error_chk "Unable to load:" "Switched to Virtual Env:" "$name" || return 1
+	echo "$p_path"
+	ch_dir "$CD_ON_LOAD" "$p_path" || return 1
+	return 0
 }
 
 # cd to project name taken, or the current env if empty
@@ -242,11 +246,10 @@ m_cd () {
 
 	if [ "$name" = "" ]; then
 		command cd "${PROJS_PATH}${current_env}"
-		error_chk "Unable to cd:" "Changed directory:" "$current_env" && return 0
+		error_chk "Unable to cd:" "Changed directory:" "$current_env" && return 0 || return 1
 	else
 		command cd "${PROJS_PATH}${name}"
-		error_chk "Unable to cd:" "Changed directory:" "$name" && return 0
-		return 1 #why? what was i doing in in m_cd with returns?
+		error_chk "Unable to cd:" "Changed directory:" "$name" && return 0 || return 1
 	fi
 }
 
