@@ -176,7 +176,7 @@ print_taken () {
 }
 # returns timestamp according to formats in config. Takes spacer string.
 timestamp () {
-	spacer="$1"
+	local spacer="$1"
 	date +"$DATE_FORMAT$spacer$TIME_FORMAT"
 }
 # Record errors to log. 
@@ -192,8 +192,8 @@ log_it () {
 }
 # Record history of commands for a project. this file identifies a project.
 update_dotfile () {
-
-	proj_log="${1}.timve"
+	local name="$1"
+	proj_log="${name}.timve"
 	printf "%b\\t%b\\t%b\\t%b\\t%b\\n" "$(timestamp "\\t")" "$USER" "$2" "$3" "$4" >> "$proj_log"
 }
 
@@ -224,23 +224,23 @@ m_list () {
 	print_div
 	printf " %b* %b%b total" "$LC" "$NC" "$count"
 	printf "%b  - For expanded commands and options:%b ve help\\n" "$TC" "$NC"
-	new_line
-	
+	new_line	
 }
 
 # Source the venv script to activate virtual environment
 # * don't think i'm capturing error correctly from venv.
 m_load () {
 	local name="$1"
+
 	source "${VENVS_PATH}${name}/bin/activate"	# 3>&1 1>&2 2>&3 | tee -a $ERROR_LOG_PATH
 	error_chk "Unable to load:" "Switched to Virtual Env:" "$name"
 }
 
 # cd to project name taken, or the current env if empty
 m_cd () {
-	get_current_env # sets $current_env.
 	local condition="$1"
 	local name="$2"
+	get_current_env # sets $current_env.
 
 	if [ "$name" = "" ]; then
 		cd "$PROJS_PATH$current_env"
@@ -260,37 +260,38 @@ m_cd () {
 m_create () {
 	local name="$1"
 	local template="$2"
-	rollback=""
 
-	### Make Project Folder
+	### Make project folder, check for template
 	make_dir "$MAKE_PROJ_FOLDER" "$proj_path" || return 1
-
-	### check for template
 	if [ "$template" = "" ]; then
 		copy_file "$USE_TEMPLATES" "$templ_default" "$proj_path" || return 1
 	else
 		copy_file "$USE_TEMPLATES" "$templ_path" "$proj_path" || return 1
 	fi
 
-	rollback="$rollback $proj_path"
-
+	### Copy editor files, replace strings in files
+	for filename in $EDITOR_TEMPLATES_PATH*; do
+		extension="${filename##*.}"
+		copy_file "$MAKE_EDITOR_FILES" "$filename" "${EDITOR_PATH}${name}.${extension}"
+	done
+	
 	### Make Subl Files
-	if copy_file "$MAKE_SUBL_FILES" "$SUBL_PROJ_TEMPLATE" "$subl_proj_path"; then
-		rollback="${rollback} ${subl_proj_path}"
-		sed -i "" "s/${SUBL_TEMPLATE_STRING}/${name}/g" "$subl_proj_path"
-		error_chk "Unable to update project template"			
-	else
-		rm_paths "$rollback"
-		return 1
-	fi
-	if copy_file "$MAKE_SUBL_FILES" "$SUBL_WORK_TEMPLATE" "$subl_work_path"; then
-		rollback="${rollback} ${subl_work_path}"
-		sed -i "" "s/${SUBL_TEMPLATE_STRING}/${name}/g" "$subl_work_path"
-		error_chk "Unable to update project template"			
-	else
-		rm_paths "$rollback" #not use these rollback?
-		return 1
-	fi
+	#if copy_file "$MAKE_SUBL_FILES" "$SUBL_PROJ_TEMPLATE" "$subl_proj_path"; then
+	#	rollback="${rollback} ${subl_proj_path}"
+	#	sed -i "" "s/${SUBL_TEMPLATE_STRING}/${name}/g" "$subl_proj_path"
+	#	error_chk "Unable to update project template"			
+	#else
+	#	rm_paths "$rollback"
+	#	return 1
+	#fi
+	#if copy_file "$MAKE_SUBL_FILES" "$SUBL_WORK_TEMPLATE" "$subl_work_path"; then
+	#	rollback="${rollback} ${subl_work_path}"
+	#	sed -i "" "s/${SUBL_TEMPLATE_STRING}/${name}/g" "$subl_work_path"
+	#	error_chk "Unable to update project template"			
+	#else
+	#	rm_paths "$rollback" #not use these rollback?
+	#	return 1
+	#fi
 
 	### Create VE and load depending
 	python3 -m venv "$env_path"
@@ -440,8 +441,10 @@ main () {
 					return 1
 				else
 					m_create "$2" "$3" || return 1
-					update_dotfile "$proj_path" "$1" "$2" "$3" || return 1				
+					update_dotfile "$proj_path" "$1" "$2" "$3" || return 1
+					new_line			
 					git_init "$2" || return 1
+					new_line
 				fi
 	            ;;
 	        -cd | cd | --chdir | chdir)
