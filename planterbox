@@ -258,13 +258,15 @@ m_cd () {
 #  - sublime text project and workspace files: customized
 # TODO: decide about using a trip, vs rollback
 m_create () {
+	local name="$1"
+	local template="$2"
 	rollback=""
 
 	### Make Project Folder
 	make_dir "$MAKE_PROJ_FOLDER" "$proj_path" || return 1
 
 	### check for template
-	if [ "$2" = "" ]; then
+	if [ "$template" = "" ]; then
 		copy_file "$USE_TEMPLATES" "$templ_default" "$proj_path" || return 1
 	else
 		copy_file "$USE_TEMPLATES" "$templ_path" "$proj_path" || return 1
@@ -275,7 +277,7 @@ m_create () {
 	### Make Subl Files
 	if copy_file "$MAKE_SUBL_FILES" "$SUBL_PROJ_TEMPLATE" "$subl_proj_path"; then
 		rollback="${rollback} ${subl_proj_path}"
-		sed -i "" "s/${SUBL_TEMPLATE_STRING}/${1}/g" "$subl_proj_path"
+		sed -i "" "s/${SUBL_TEMPLATE_STRING}/${name}/g" "$subl_proj_path"
 		error_chk "Unable to update project template"			
 	else
 		rm_paths "$rollback"
@@ -283,7 +285,7 @@ m_create () {
 	fi
 	if copy_file "$MAKE_SUBL_FILES" "$SUBL_WORK_TEMPLATE" "$subl_work_path"; then
 		rollback="${rollback} ${subl_work_path}"
-		sed -i "" "s/${SUBL_TEMPLATE_STRING}/${1}/g" "$subl_work_path"
+		sed -i "" "s/${SUBL_TEMPLATE_STRING}/${name}/g" "$subl_work_path"
 		error_chk "Unable to update project template"			
 	else
 		rm_paths "$rollback" #not use these rollback?
@@ -294,12 +296,12 @@ m_create () {
 	python3 -m venv "$env_path"
 	### ----------------------------
 	#if error_chk "Unable to create Virtual Environment:" "Virtual env created at:" "$env_path"; then
-	if error_chk "Unable to create Virtual Environment:" "Created: ${PY_COLOR}Python${PY2_COLOR}3 ${NC}venv" "$1"; then #gonna have to change back, too much
+	if error_chk "Unable to create Virtual Environment:" "Created: ${PY_COLOR}Python${PY2_COLOR}3 ${NC}venv" "$name"; then #gonna have to change back, too much
 		# made un commented changes above last commit
 		#succ "Created ${PY_COLOR}Python 3 venv:" "$1" 
 		#$PYOK="${NC}Created ${PY_COLOR}Python${PY2_COLOR}3 ${NC}venv:"
 		#succ "${NC}Created ${PY_COLOR}Python${PY2_COLOR}3 ${NC}venv:" "${BOLD_WHITE}${1}" 
-		[ "$LOAD_ON_CREATE" = true ] && m_load "$1"		
+		[ "$LOAD_ON_CREATE" = true ] && m_load "$name"		
 		ch_dir "$CD_ON_CREATE" "$proj_path"		
 	else
 		rm_paths "$rollback"
