@@ -358,7 +358,8 @@ m_copy () {
 # * integrate comments below
 # TODO: decide about using a trip, vs rollback
 m_restore () {
-	trip=false #in the event of any folder not copy, don't delete?
+	local name="$1"
+	local trip=false #in the event of any folder not copy, don't delete?
 	### Collect Trash? should I enforce this?
 	if [ "$COLLECT_TRASH" = true ]; then
 		### restore project from trash
@@ -369,12 +370,12 @@ m_restore () {
 		### delete trash folder
 		if [ $trip = false ]; then #necc really??
 			remove_file "true" "$trash_path"
-			succ "Restored:" "$1"
+			succ "Restored:" "$name"
 		else
-			lert "Something happened, kept in trash:" "$1"
+			lert "Something happened, kept in trash:" "$name"
 		fi
 	else
-		lert "Trash disabled, unable to restore:" "$1"
+		lert "Trash disabled, unable to restore:" "$name"
 	fi
 }
 
