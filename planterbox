@@ -272,36 +272,16 @@ m_create () {
 	### Copy editor files, replace strings in files
 	for filename in $EDITOR_TEMPLATES_PATH*; do
 		extension="${filename##*.}"
-		copy_file "$MAKE_EDITOR_FILES" "$filename" "${EDITOR_PATH}${name}.${extension}"
+		copy_file "$MAKE_EDITOR_FILES" "$filename" "${EDITOR_PATH}${name}.${extension}" || return 1
+		sed -i "" "s/${EDITOR_TEMPLATE_STRING}/${name}/g" "${EDITOR_PATH}${name}.${extension}"
+		error_chk "Unable to update editor template with sed." || return 1
 	done
 	
-	### Make Subl Files
-	#if copy_file "$MAKE_SUBL_FILES" "$SUBL_PROJ_TEMPLATE" "$subl_proj_path"; then
-	#	rollback="${rollback} ${subl_proj_path}"
-	#	sed -i "" "s/${SUBL_TEMPLATE_STRING}/${name}/g" "$subl_proj_path"
-	#	error_chk "Unable to update project template"			
-	#else
-	#	rm_paths "$rollback"
-	#	return 1
-	#fi
-	#if copy_file "$MAKE_SUBL_FILES" "$SUBL_WORK_TEMPLATE" "$subl_work_path"; then
-	#	rollback="${rollback} ${subl_work_path}"
-	#	sed -i "" "s/${SUBL_TEMPLATE_STRING}/${name}/g" "$subl_work_path"
-	#	error_chk "Unable to update project template"			
-	#else
-	#	rm_paths "$rollback" #not use these rollback?
-	#	return 1
-	#fi
-
 	### Create VE and load depending
 	python3 -m venv "$env_path"
 	### ----------------------------
 	#if error_chk "Unable to create Virtual Environment:" "Virtual env created at:" "$env_path"; then
 	if error_chk "Unable to create Virtual Environment:" "Created: ${PY_COLOR}Python${PY2_COLOR}3 ${NC}venv" "$name"; then #gonna have to change back, too much
-		# made un commented changes above last commit
-		#succ "Created ${PY_COLOR}Python 3 venv:" "$1" 
-		#$PYOK="${NC}Created ${PY_COLOR}Python${PY2_COLOR}3 ${NC}venv:"
-		#succ "${NC}Created ${PY_COLOR}Python${PY2_COLOR}3 ${NC}venv:" "${BOLD_WHITE}${1}" 
 		[ "$LOAD_ON_CREATE" = true ] && m_load "$name"		
 		ch_dir "$CD_ON_CREATE" "$proj_path"		
 	else
