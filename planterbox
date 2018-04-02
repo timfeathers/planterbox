@@ -428,8 +428,10 @@ main () {
 				m_cd "$2"
 	            ;;	            
 	        -s | s | --search | search)
-				start_temp true "Searching Trash for: " "$2" && m_list "$TRASHCAN_PATH" "$2"
-				start_temp true "Searching Virtual Envs for: " "$2" && m_list "$VENVS_PATH" "$2"
+				start_temp true "Searching Trash for: " "$2"
+				m_list "$TRASHCAN_PATH" "$2"
+				start_temp true "Searching Virtual Envs for: " "$2"
+				m_list "$VENVS_PATH" "$2"
 	            ;;	            
 	        -cpy | cpy | --copy | copy) # 'cp' conflicts
 				start_temp "$VERBOSE" "Copying VE: " "$2 to $3"
