@@ -336,15 +336,7 @@ m_remove () {
 		remove_file "$RM_VENV_FILES" "$env_path" || return 1
 		succ "Removed VE:" "$name"
 	else
-	# Actual delete
-		lert "Files will be Deleted. Continue?" "(y/n) " true
-		if yes_no; then
-			remove_file "$RM_SUBL_FILES" "$subl_proj_path" || return 1
-			remove_file "$RM_SUBL_FILES" "$subl_work_path" || return 1
-			remove_file "$RM_PROJ_FILES" "$proj_path" || return 1
-			remove_file "$RM_VENV_FILES" "$env_path" || return 1
-			succ "Deleted VE:" "$name"
-		fi
+		m_delete "$name"
 	fi
 }
 
