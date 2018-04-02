@@ -20,6 +20,7 @@
 # like 've tacoApp' rather than 've load tacoApp'. These keywords are forbidden:
 taken_names=("" "blank" "-l" "l" "ls" "--list" "list" \
 	"-t" "t" "--trash" "trash" \
+	"-delete" "delete" "--delete" \
 	"-c" "c" "--create" "create" \
 	"-cd" "cd" "--chdir" "chdir" \
 	"-s" "s" "--search" "search" \
@@ -296,6 +297,22 @@ m_create () {
 	ch_dir "$CD_ON_CREATE" "$proj_path"	|| return 1
 	return 0
 }
+#	
+# Actual delete
+# seperated delete from remove
+m_delete () {
+	local name="$1"
+
+	lert "Files will be Deleted. Continue?" "(y/n) " true
+	if yes_no; then
+		remove_file "$RM_SUBL_FILES" "$subl_proj_path" || return 1
+		remove_file "$RM_SUBL_FILES" "$subl_work_path" || return 1
+		remove_file "$RM_PROJ_FILES" "$proj_path" || return 1
+		remove_file "$RM_VENV_FILES" "$env_path" || return 1
+		succ "Deleted VE:" "$name"
+	fi
+}
+
 
 # Copy files to script trash, or if trash is not enabled, system remove. 
 # Ask if user if sure?
@@ -438,6 +455,10 @@ main () {
 				m_copy "$2" "$3"
 				update_dotfile "${PROJS_PATH}${3}/" "$1" "$2" "$3"
 	            ;;	            
+	        -delete | delete | --delete)
+				start_temp "$VERBOSE" "Deleting Virtual Env: " "$2"
+				m_delete "$2"
+	            ;;
 	        -rm | rm | --remove | remove)
 				start_temp "$VERBOSE" "Removing Virtual Env: " "$2"
 				m_remove "$2"
