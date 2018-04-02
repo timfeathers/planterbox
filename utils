@@ -171,11 +171,12 @@ check_paths () {
 		"$ERROR_LOG_PATH"
 		)
 	[ "$MAKE_PROJ_FOLDER" == "true" ] && app_paths+=("$PROJS_PATH")
-	[ "$COLLECT_TRASH" == "true" ] && app_paths+=("$VENVS_TRASH_PATH")
+	[ "$COLLECT_TRASH" == "true" ] && app_paths+=("$TRASHCAN_PATH")
 	[ "$LOG_HISTORY" == "true" ] && app_paths+=("$LOG_PATH")
-	[ "$MAKE_SUBL_FILES" == "true" ] && app_paths+=("$SUBL_PROJS_PATH") 
-	[ "$MAKE_SUBL_FILES" == "true" ] && app_paths+=("$SUBL_PROJ_TEMPLATE")
-	[ "$MAKE_SUBL_FILES" == "true" ] && app_paths+=("$SUBL_WORK_TEMPLATE") 
+	#[ "$MAKE_SUBL_FILES" == "true" ] && app_paths+=("$SUBL_PROJS_PATH") 
+	#[ "$MAKE_SUBL_FILES" == "true" ] && app_paths+=("$SUBL_PROJ_TEMPLATE")
+	#[ "$MAKE_SUBL_FILES" == "true" ] && app_paths+=("$SUBL_WORK_TEMPLATE") 
+	# must update this function here, ex: templates, editor
 
 	for p in "${app_paths[@]}"
 	do

@@ -492,6 +492,7 @@ main () {
 #
 # if config paths bad, exit
 check_paths "true" || return 1
+
 # log next?
 log_it "$1" "$2" "$3"
 # run main
