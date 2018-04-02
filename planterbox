@@ -1,6 +1,6 @@
 #!/bin/bash
 # ===============================================================================
-# Virtual Environment Utility - PlanterBox 
+# Virtual Environment Utility - PlanterBox(muffintray)
 # ===============================================================================
 # This file must be used with "source path/ve.sh" *from bash*
 # you cannot run it directly. (from venv activate script,.. applies)
@@ -212,7 +212,6 @@ m_list () {
 	local count=""
 
 	ch_dir "$CD_TO_LS" "$path"
-
 	if [ "$search" = "" ]; then
 		ls_dirs true "$path" | dent " " | pr -t -3 -w70
 		count="$(ls_dirs true "$path" | wc -l | xargs)" #xargs for easy trim		
@@ -276,6 +275,9 @@ m_create () {
 	else
 		copy_file "$USE_TEMPLATES" "$templ_path" "$proj_path" || return 1
 	fi
+
+	### Git init, and git commit
+	git_init "$name" || return 1
 
 	### Copy editor files, replace strings in files
 	for filename in $EDITOR_TEMPLATES_PATH*; do
@@ -419,9 +421,6 @@ main () {
 				start_temp "$VERBOSE" "Creating new Virtual Env: " "$2"
 				m_create "$2" "$3" || return 1
 				update_dotfile "$proj_path" "$1" "$2" "$3" || return 1
-				new_line			
-				git_init "$2" || return 1
-				new_line
 	            ;;
 	        -cd | cd | --chdir | chdir)
 				m_cd "$2"
