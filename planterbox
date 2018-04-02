@@ -231,8 +231,9 @@ m_list () {
 # Source the venv script to activate virtual environment
 # * don't think i'm capturing error correctly from venv.
 m_load () {
-	source "${VENVS_PATH}${1}/bin/activate"	# 3>&1 1>&2 2>&3 | tee -a $ERROR_LOG_PATH
-	error_chk "Unable to load:" "Switched to Virtual Env:" "$1"
+	local name="$1"
+	source "${VENVS_PATH}${name}/bin/activate"	# 3>&1 1>&2 2>&3 | tee -a $ERROR_LOG_PATH
+	error_chk "Unable to load:" "Switched to Virtual Env:" "$name"
 }
 
 # cd to project name taken, or the current env if empty
