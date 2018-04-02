@@ -261,6 +261,14 @@ m_create () {
 	local name="$1"
 	local template="$2"
 
+	### Check name given is ok.
+	if array_contains "$name" "${taken_names[@]}"; then #TODO -make own func?
+		lert "Forbidden name/keyword:" "$name"
+		print_taken "$name"
+		return 1
+	fi
+
+
 	### Make project folder, check for template
 	make_dir "$MAKE_PROJ_FOLDER" "$proj_path" || return 1
 	if [ "$template" = "" ]; then
@@ -415,17 +423,11 @@ main () {
 	        	;;
 	        -c | c | --create | create)
 				start_temp "$VERBOSE" "Creating new Virtual Env: " "$2"
-				if array_contains "$2" "${taken_names[@]}"; then #TODO -make own func?
-					lert "Forbidden name/keyword:" "$2"
-					print_taken "$2"
-					return 1
-				else
-					m_create "$2" "$3" || return 1
-					update_dotfile "$proj_path" "$1" "$2" "$3" || return 1
-					new_line			
-					git_init "$2" || return 1
-					new_line
-				fi
+				m_create "$2" "$3" || return 1
+				update_dotfile "$proj_path" "$1" "$2" "$3" || return 1
+				new_line			
+				git_init "$2" || return 1
+				new_line
 	            ;;
 	        -cd | cd | --chdir | chdir)
 				m_cd "$2"
