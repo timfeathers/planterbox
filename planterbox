@@ -260,6 +260,7 @@ m_cd () {
 m_create () {
 	local name="$1"
 	local template="$2"
+	local editor_file_path="${EDITOR_PATH}${name}.${extension}"
 
 	### Check name given is ok.
 	if array_contains "$name" "${taken_names[@]}"; then #TODO -make own func?
@@ -279,8 +280,8 @@ m_create () {
 	### Copy editor files, replace strings in files
 	for filename in $EDITOR_TEMPLATES_PATH*; do
 		extension="${filename##*.}"
-		copy_file "$MAKE_EDITOR_FILES" "$filename" "${EDITOR_PATH}${name}.${extension}" || return 1
-		sed -i "" "s/${EDITOR_TEMPLATE_STRING}/${name}/g" "${EDITOR_PATH}${name}.${extension}"
+		copy_file "$MAKE_EDITOR_FILES" "$filename" "$editor_file_path" || return 1
+		sed -i "" "s/${EDITOR_TEMPLATE_STRING}/${name}/g" "$editor_file_path"
 		error_chk "Unable to update editor template with sed." || return 1
 	done
 	
