@@ -268,8 +268,7 @@ m_create () {
 		return 1
 	fi
 
-
-	### Make project folder, check for template
+	### Create project folder, check for template arg
 	make_dir "$MAKE_PROJ_FOLDER" "$proj_path" || return 1
 	if [ "$template" = "" ]; then
 		copy_file "$USE_TEMPLATES" "$templ_default" "$proj_path" || return 1
@@ -287,15 +286,9 @@ m_create () {
 	
 	### Create VE and load depending
 	python3 -m venv "$env_path"
-	### ----------------------------
-	#if error_chk "Unable to create Virtual Environment:" "Virtual env created at:" "$env_path"; then
-	if error_chk "Unable to create Virtual Environment:" "Created: ${PY_COLOR}Python${PY2_COLOR}3 ${NC}venv" "$name"; then #gonna have to change back, too much
-		[ "$LOAD_ON_CREATE" = true ] && m_load "$name"		
-		ch_dir "$CD_ON_CREATE" "$proj_path"		
-	else
-		rm_paths "$rollback"
-		return 1
-	fi
+	error_chk "Unable to create VE:" "Created: ${PY_COLOR}Python${PY2_COLOR}3 ${NC}venv" "$name" || return 1 #gonna have to change back, too much
+	[ "$LOAD_ON_CREATE" = true ] && m_load "$name"		
+	ch_dir "$CD_ON_CREATE" "$proj_path"	|| return 1
 	return 0
 }
 
