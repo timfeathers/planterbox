@@ -386,7 +386,9 @@ m_help () { #change help and history func names?
 
 # Print command history -if kept- with the length: default(10), "user defined", all
 m_history () {
-	case $1 in
+	local amount="$1"
+
+	case $amount in
 	    "")
 			start_temp true "Command history: " "$DEFAULT_HIST"
 			tail "-n$DEFAULT_HIST" "$LOG_PATH" | dent
