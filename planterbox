@@ -237,17 +237,16 @@ m_load () {
 
 # cd to project name taken, or the current env if empty
 m_cd () {
-	local condition="$1"
-	local name="$2"
+	local name="$1"
 	get_current_env # sets $current_env.
 
 	if [ "$name" = "" ]; then
-		cd "$PROJS_PATH$current_env"
+		command cd "${PROJS_PATH}${current_env}"
 		error_chk "Unable to cd:" "Changed directory:" "$current_env" && return 0
 	else
-		cd "$PROJS_PATH$name"
+		command cd "${PROJS_PATH}${name}"
 		error_chk "Unable to cd:" "Changed directory:" "$name" && return 0
-		return 1
+		return 1 #why? what was i doing in in m_cd with returns?
 	fi
 }
 
