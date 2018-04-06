@@ -234,8 +234,8 @@ m_load () {
 	local p_path="${PROJS_PATH}${1}/"
 
 	source "${VENVS_PATH}${name}/bin/activate"
-	error_chk "Unable to load:" "Switched to Virtual Env:" "$name" || return 1
-	echo "$p_path"
+	error_chk "Unable to load:" "Loaded:" "$name" || return 1
+	#echo "$p_path" #testing
 	ch_dir "$CD_ON_LOAD" "$p_path" || return 1
 	return 0
 }
@@ -247,10 +247,10 @@ m_cd () {
 
 	if [ "$name" = "" ]; then
 		command cd "${PROJS_PATH}${current_env}"
-		error_chk "Unable to cd:" "Changed directory:" "$current_env" && return 0 || return 1
+		error_chk "Unable to cd:" "Loaded:" "$current_env" && return 0 || return 1
 	else
 		command cd "${PROJS_PATH}${name}"
-		error_chk "Unable to cd:" "Changed directory:" "$name" && return 0 || return 1
+		error_chk "Unable to cd:" "Loaded:" "$name" && return 0 || return 1
 	fi
 }
 
@@ -279,9 +279,6 @@ m_create () {
 		copy_file "$USE_TEMPLATES" "$templ_path" "$proj_path" || return 1
 	fi
 
-	### Git init, and git commit
-	git_init "$name" || return 1
-
 	### Copy editor files, replace strings in files
 	for filename in $EDITOR_TEMPLATES_PATH*; do
 		extension="${filename##*.}"
@@ -293,9 +290,16 @@ m_create () {
 	
 	### Create VE and load depending
 	python3 -m venv "$env_path"
-	error_chk "Unable to create VE:" "Created: ${PY_COLOR}Python${PY2_COLOR}3 ${NC}venv" "$name" || return 1 #gonna have to change back, too much
+	error_chk "Unable to create VE:" "Created Python3 venv:" "$name" || return 1
 	[ "$LOAD_ON_CREATE" = true ] && m_load "$name"		
 	ch_dir "$CD_ON_CREATE" "$proj_path"	|| return 1
+
+	### Git init, and git commit
+	git_init "$name" || return 1
+	succ "Created VE:" "$name"	
+	print_div
+	new_line
+
 	return 0
 }
 #	
@@ -366,7 +370,7 @@ m_restore () {
 
 	if [ "$COLLECT_TRASH" = true ]; then # restore project from trash
 		find "$trash_edit" -type f -name "${name}.*" -exec cp {} "$EDITOR_PATH" \;
-		error_chk "Unable to copy editor files:" "Coppied:" "${EDITOR_PATH}${name}.*"	
+		error_chk "Unable to copy editor files:" "Coppied:" "$trash_edit" #"${EDITOR_PATH}${name}.*"	
 		copy_file "$RM_PROJ_FILES" "$trash_proj" "$proj_path" || trip=true
 		copy_file true "$trash_venv" "$env_path" || trip=true
 		if [ $trip = false ]; then # delete trash folder
@@ -422,7 +426,7 @@ main () {
 	if [ "$1" != "" ]; then
 	    case $1 in
 	        -l | l | ls | --list | list) #"l" and single letters not working, alias??
-				start_temp true "Virtual Envs Directory: " "$VENVS_PATH"
+				start_temp true "VE Directory: " "$VENVS_PATH"
 				m_list "$VENVS_PATH" "$2"
 	        	;;
 	        -t | t | --trash | trash)
@@ -483,7 +487,7 @@ main () {
             	;;
 	    esac
 	else
-		start_temp true "Virtual Envs Directory: " "$VENVS_PATH"
+		start_temp true "VE Directory: " "$VENVS_PATH"
 		m_list "$VENVS_PATH"
 		print_help_short
 	fi

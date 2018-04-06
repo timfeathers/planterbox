@@ -208,11 +208,11 @@ get_current_env () {
 
 git_init () {
 	if [ "$GIT_ON_CREATE" == "true" ]; then
-		git init "$proj_path"
+		git init "$proj_path" | dent '  '
 		#git add "$proj_path"
 		git add .
-		git commit -m "First Commit."
-		error_chk "Problem with GIT:" "init'ed:${BOLD_WHITE}<> ${GIT_COLOR}git ${NC}repository" "$1"
+		git commit -m "First Commit." | dent '  '
+		error_chk "Problem with Git:" "init'ed and commited Git repo:" "$1"
 		chmod -R +w "$proj_path" #make git files writable
 	fi
 }
