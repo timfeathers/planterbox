@@ -58,6 +58,8 @@ trash_proj="${trash_path}proj/"
 trash_edit="${trash_path}subl/"
 
 
+
+
 templ_path="${TEMPLATES_PATH}${3}/"
 templ_default="${TEMPLATES_PATH}default/"
 
@@ -262,6 +264,7 @@ m_cd () {
 m_create () {
 	local name="$1"
 	local template="$2"
+	local list_of_temps=(${2})
 	local editor_file_path
 
 	### Check name given is ok.
@@ -276,7 +279,12 @@ m_create () {
 	if [ "$template" = "" ]; then
 		copy_file "$USE_TEMPLATES" "$templ_default" "$proj_path" || return 1
 	else
-		copy_file "$USE_TEMPLATES" "$templ_path" "$proj_path" || return 1
+		for var in ${list_of_temps[@]}; do # copy all templates
+			#echo "-$var-" #testing
+			templ_path="${TEMPLATES_PATH}${var}/"
+			copy_file "$USE_TEMPLATES" "$templ_path" "$proj_path" || return 1
+		done
+		#copy_file "$USE_TEMPLATES" "$templ_path" "$proj_path" || return 1
 	fi
 
 	### Copy editor files, replace strings in files
@@ -435,6 +443,7 @@ main () {
 				;;
 			-c | c | --create | create)
 				start_temp "$VERBOSE" "Creating new Virtual Env: " "$2"
+				#m_create "$@" || return 1
 				m_create "$2" "$3" || return 1
 				update_dotfile "$proj_path" "$1" "$2" "$3" || return 1
 				;;
@@ -508,5 +517,6 @@ check_paths "true" || return 1
 log_it "$1" "$2" "$3"
 # run main
 main "$1" "$2" "$3"
+#main "$@"
 
 
