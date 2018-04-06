@@ -330,17 +330,14 @@ m_remove () {
 	# Send to trash
 		mkdir "$trash_venv" "$trash_proj" "$trash_edit"
 		error_chk "Unable to create trash directories" || return 1
-		
-		copy_file "$RM_SUBL_FILES" "$subl_proj_path" "$trash_edit" || return 1
-		remove_file true "$subl_proj_path" || return 1
-		copy_file "$RM_SUBL_FILES" "$subl_work_path" "$trash_edit" || return 1
-		remove_file true "$subl_work_path" || return 1
-
-
-		copy_file "$RM_PROJ_FILES" "${proj_path}." "$trash_proj" || return 1
+		copy_file "$RM_PROJ_FILES" "${proj_path}" "$trash_proj" || return 1
 		remove_file "$RM_PROJ_FILES" "$proj_path" || return 1
-		copy_file "$RM_VENV_FILES" "${env_path}." "$trash_venv" || return 1
+		copy_file "$RM_VENV_FILES" "${env_path}" "$trash_venv" || return 1
 		remove_file "$RM_VENV_FILES" "$env_path" || return 1
+		find "$EDITOR_PATH" -type f -name "${name}.*" -exec cp {} "$trash_edit" \;
+		error_chk "Unable to copy editor files:" "Coppied:" "${EDITOR_PATH}${name}.*"	
+		find "$EDITOR_PATH" -type f -name "${name}.*" -delete
+		error_chk "Unable to remove editor files:" "Removed:" "${EDITOR_PATH}${name}.*"
 		succ "Removed VE:" "$name"
 	else
 		m_delete "$name"
