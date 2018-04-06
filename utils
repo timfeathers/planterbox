@@ -76,7 +76,7 @@ copy_file () {
 
 	if [ "$condition" == "true" ]; then
 		cp -R "$copy_from" "$copy_to" >/dev/null
-		error_chk "Unable to copy path:" "Copied:" "$copy_from" && return 0 || return 1
+		error_chk "Unable to copy path:" "Coppied:" "$copy_from" && return 0 || return 1
 	else
 		return 0
 	fi
