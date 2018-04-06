@@ -223,7 +223,7 @@ m_list () {
 
 	print_div
 	printf " %b* %b%b total" "$LC" "$NC" "$count"
-	printf "%b  - For expanded commands and options:%b ve help\\n" "$TC" "$NC"
+	printf "%b For expanded commands and options:%b ve help\\n" "$TC" "$NC"
 	new_line	
 }
 
@@ -469,6 +469,9 @@ main () {
 	        -h | h | --help | help)
 				start_temp true "Help: " "commands and options"
 				m_help
+	            ;;	            
+	        -o | o | --open | open)
+				find "$EDITOR_PATH" -type f -name "${2}.*" -exec subl {} \;
 	            ;;
 	        -p | p | --paths | paths)
 				start_temp true "Paths:" "check 'em while you got 'em"
