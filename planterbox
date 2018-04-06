@@ -395,22 +395,22 @@ m_history () {
 	local amount="$1"
 
 	case $amount in
-	    "")
+		"")
 			start_temp true "Command history: " "$DEFAULT_HIST"
 			tail "-n$DEFAULT_HIST" "$LOG_PATH" | dent
 			#these are not really checking tail/cat, just indent
 			error_chk "Unable to print history:" "" "$DEFAULT_HIST"
-	        ;;
-	    -a | a | --all | all)
+			;;
+		-a | a | --all | all)
 			start_temp true "Command history: " "COMPLETE"		
 			cat "$LOG_PATH" | dent
 			error_chk "Unable to print history:" "" "COMPLETE"
-	        ;;
-	    *)
+			;;
+		*)
 			start_temp true "Command history: " "$1"
 			tail "-n$1" "$LOG_PATH" | dent
 			error_chk "Unable to print history:" "" "$1"
-	    	;;
+			;;
 	esac
 	print_div
 }
@@ -424,71 +424,71 @@ m_history () {
 # on blank command, print ve directory and useful commands.
 main () {
 	if [ "$1" != "" ]; then
-	    case $1 in
-	        -l | l | ls | --list | list) #"l" and single letters not working, alias??
+		case $1 in
+			-l | l | ls | --list | list) #"l" and single letters not working, alias??
 				start_temp true "VE Directory: " "$VENVS_PATH"
 				m_list "$VENVS_PATH" "$2"
-	        	;;
-	        -t | t | --trash | trash)
+				;;
+			-t | t | --trash | trash)
 				start_temp true "Trash Directory: " "$TRASHCAN_PATH"
 				m_list "$TRASHCAN_PATH" "$2"
-	        	;;
-	        -c | c | --create | create)
+				;;
+			-c | c | --create | create)
 				start_temp "$VERBOSE" "Creating new Virtual Env: " "$2"
 				m_create "$2" "$3" || return 1
 				update_dotfile "$proj_path" "$1" "$2" "$3" || return 1
-	            ;;
-	        -cd | cd | --chdir | chdir)
+				;;
+			-cd | cd | --chdir | chdir)
 				m_cd "$2"
-	            ;;	            
-	        -s | s | --search | search)
+				;;
+			-s | s | --search | search)
 				start_temp true "Searching Trash for: " "$2"
 				m_list "$TRASHCAN_PATH" "$2"
 				start_temp true "Searching Virtual Envs for: " "$2"
 				m_list "$VENVS_PATH" "$2"
-	            ;;	            
-	        -cpy | cpy | --copy | copy) # 'cp' conflicts
+				;;
+			-cpy | cpy | --copy | copy) # 'cp' conflicts
 				start_temp "$VERBOSE" "Copying VE: " "$2 to $3"
 				m_copy "$2" "$3"
 				update_dotfile "${PROJS_PATH}${3}/" "$1" "$2" "$3"
-	            ;;	            
-	        -delete | delete | --delete)
+				;;
+			-delete | delete | --delete)
 				start_temp "$VERBOSE" "Deleting Virtual Env: " "$2"
 				m_delete "$2"
-	            ;;
-	        -rm | rm | --remove | remove)
+				;;
+			-rm | rm | --remove | remove)
 				start_temp "$VERBOSE" "Removing Virtual Env: " "$2"
 				m_remove "$2"
 				[ "$COLLECT_TRASH" = true ] && update_dotfile "$trash_proj" "$1" "$2" "$3"
-	            ;;
-	        -r | r | --restore | restore)
+				;;
+			-r | r | --restore | restore)
 				start_temp "$VERBOSE" "Restoring Virtual Env: " "$2"
 				m_restore "$2"
 				update_dotfile "$proj_path" "$1" "$2"					
-	            ;;	            
-	        -h | h | --help | help)
+				;;
+			-h | h | --help | help)
 				start_temp true "Help: " "commands and options"
 				m_help
-	            ;;	            
-	        -o | o | --open | open)
+				;;
+			-o | o | --open | open)
 				find "$EDITOR_PATH" -type f -name "${2}.*" -exec subl {} \;
-	            ;;
-	        -p | p | --paths | paths)
+				;;
+			-p | p | --paths | paths)
 				start_temp true "Paths:" "check 'em while you got 'em"
 				check_paths "false"
-	            ;;	            
-	        -hs | hs | -hist | hist | --history | history)
+				;;
+			-hs | hs | -hist | hist | --history | history)
 				# start_temp is variable, so in history function
 				m_history "$2"
-	            ;;
-	        -v | v | --version | version)
+				;;
+			-v | v | --version | version)
 				printf "%s\\n" "$VERSION"
-	            ;;	            
-	        *)
+				;;
+			*)
 				# start_temp true "Switching to Virtual Env: " $1
 				m_load "$1"
-            	;;
-	    esac
+				;;
+		esac
 	else
 		start_temp true "VE Directory: " "$VENVS_PATH"
 		m_list "$VENVS_PATH"
