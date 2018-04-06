@@ -262,7 +262,7 @@ m_cd () {
 m_create () {
 	local name="$1"
 	local template="$2"
-	local editor_file_path="${EDITOR_PATH}${name}.${extension}"
+	local editor_file_path
 
 	### Check name given is ok.
 	if array_contains "$name" "${taken_names[@]}"; then #TODO -make own func?
@@ -285,6 +285,7 @@ m_create () {
 	### Copy editor files, replace strings in files
 	for filename in $EDITOR_TEMPLATES_PATH*; do
 		extension="${filename##*.}"
+		editor_file_path="${EDITOR_PATH}${name}.${extension}"
 		copy_file "$MAKE_EDITOR_FILES" "$filename" "$editor_file_path" || return 1
 		sed -i "" "s/${EDITOR_TEMPLATE_STRING}/${name}/g" "$editor_file_path"
 		error_chk "Unable to update editor template with sed." || return 1
@@ -300,15 +301,18 @@ m_create () {
 #	
 # Actual delete
 # seperated delete from remove
+# all editor files by "${name}." are deleted, might remove wrong files
+# ex: ve delete env_name
+# "tim_test.file" "blahwtest.txt" "test.slammajamma" all deleted
 m_delete () {
 	local name="$1"
 
 	lert "Files will be Deleted. Continue?" "(y/n) " true
 	if yes_no; then
-		remove_file "$RM_SUBL_FILES" "$subl_proj_path" || return 1
-		remove_file "$RM_SUBL_FILES" "$subl_work_path" || return 1
 		remove_file "$RM_PROJ_FILES" "$proj_path" || return 1
 		remove_file "$RM_VENV_FILES" "$env_path" || return 1
+		find "$EDITOR_PATH" -type f -name "${name}.*" -delete
+		error_chk "Unable to delete editor files:" "Removed:" "${EDITOR_PATH}${name}.*"
 		succ "Deleted VE:" "$name"
 	fi
 }
@@ -325,11 +329,14 @@ m_remove () {
 	if [ "$COLLECT_TRASH" = true ]; then
 	# Send to trash
 		mkdir "$trash_venv" "$trash_proj" "$trash_edit"
-		error_chk "Unable to create trash directories"
+		error_chk "Unable to create trash directories" || return 1
+		
 		copy_file "$RM_SUBL_FILES" "$subl_proj_path" "$trash_edit" || return 1
 		remove_file true "$subl_proj_path" || return 1
 		copy_file "$RM_SUBL_FILES" "$subl_work_path" "$trash_edit" || return 1
 		remove_file true "$subl_work_path" || return 1
+
+
 		copy_file "$RM_PROJ_FILES" "${proj_path}." "$trash_proj" || return 1
 		remove_file "$RM_PROJ_FILES" "$proj_path" || return 1
 		copy_file "$RM_VENV_FILES" "${env_path}." "$trash_venv" || return 1

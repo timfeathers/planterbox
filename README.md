@@ -1,5 +1,7 @@
 # Doc for timve
 
+make on create templates load more than one in sequence
+
 ## setup/install plan
 install
 should put executable in usr/local/bin for all users
