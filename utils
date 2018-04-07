@@ -217,6 +217,22 @@ git_init () {
 	fi
 }
 
+u_pip () {
+	if [ "$UPGRADE_PIP" == "true" ]; then
+		pip install --upgrade pip | dent '  ' #>/dev/null
+		error_chk "Unable to upgrade:" "Upgraded:" "pip" || return 1
+	fi
+	return 0
+}
+
+r_pip () {
+	local req="$1"
+
+	pip install -r "$req" | dent '  '
+	error_chk "Unable to install requirements:" "Installed requirements:" "$reqs_default" || return 1
+	return 0
+}
+
 
 
 

@@ -58,6 +58,7 @@ trash_proj="${trash_path}proj/"
 trash_edit="${trash_path}subl/"
 
 
+reqs_default="${REQS_PATH}default-requirements.txt"
 
 
 templ_path="${TEMPLATES_PATH}${3}/"
@@ -301,6 +302,13 @@ m_create () {
 	error_chk "Unable to create VE:" "Created Python3 venv:" "$name" || return 1
 	[ "$LOAD_ON_CREATE" = true ] && m_load "$name"		
 	ch_dir "$CD_ON_CREATE" "$proj_path"	|| return 1
+
+	### Update pip and install requirements
+	u_pip
+	r_pip "$reqs_default"
+	#pip install -r "$reqs_default" | dent '  '
+	#error_chk "Unable to install requirements:" "Installed requirements:" "$reqs_default" || return 1
+
 
 	### Git init, and git commit
 	git_init "$name" || return 1

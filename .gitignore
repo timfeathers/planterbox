@@ -30,8 +30,9 @@ Temporary Items
 # for identifying folder as a project
 .timve
 
+archive/
 editor/
+reqs/
 templates/
 trash/
 venvs/
-archive/
