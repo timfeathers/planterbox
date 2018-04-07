@@ -101,7 +101,7 @@ succ () {
 }
 # indent output by piping through sed. take the indent as param
 dent () {
-	local margin="${1:- * }"
+	local margin="${1:-  }"
 	sed "s/^/${margin}/"
 }
 
@@ -465,6 +465,9 @@ m_pip () {
 main () {
 	if [ "$1" != "" ]; then
 		case $1 in
+			-a | a | --archive | archive)
+				#tar -czvf "${ARCH_PATH}${2}.tar.gz" "/var/config"
+				;;			
 			-c | c | --create | create)
 				start_temp "$VERBOSE" "Creating new Virtual Env: " "$2"
 				#m_create "$@" || return 1
