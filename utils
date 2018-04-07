@@ -217,7 +217,7 @@ git_init () {
 	fi
 }
 
-u_pip () {
+upgrade_pip () {
 	if [ "$UPGRADE_PIP" == "true" ]; then
 		pip install --upgrade pip | dent '  ' #>/dev/null
 		error_chk "Unable to upgrade:" "Upgraded:" "pip" || return 1
@@ -225,7 +225,7 @@ u_pip () {
 	return 0
 }
 
-r_pip () {
+reqs_pip () {
 	local req="$1"
 
 	pip install -r "$req" | dent '  '
