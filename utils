@@ -102,9 +102,10 @@ make_dir () {
 ls_dirs () {
 	local condition="$1"
 	local path="$2"
+	local f_type="$3"
 
 	if [ "$condition" == "true" ]; then
-		find . -mindepth 1 -maxdepth 1 -type d | sort
+		find . -mindepth 1 -maxdepth 1 -type "$f_type" | sort
 		error_chk "Unable to list path:" "" "$path" && return 0 #not evaling find?
 	else
 		return 1

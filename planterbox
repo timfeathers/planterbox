@@ -217,11 +217,11 @@ m_list () {
 
 	ch_dir "$CD_TO_LS" "$path"
 	if [ "$search" = "" ]; then
-		ls_dirs true "$path" | dent " " | pr -t -3 -w70
-		count="$(ls_dirs true "$path" | wc -l | xargs)" #xargs for easy trim		
+		ls_dirs true "$path" "d" | dent " " | pr -t -3 -w70
+		count="$(ls_dirs true "$path" "d" | wc -l | xargs)" #xargs for easy trim		
 	else
-		ls_dirs true "$path"| grep "$search" | pr -t -3 -w70
-		count="$(ls_dirs true "$path" | grep "$search" | wc -l | xargs)"		
+		ls_dirs true "$path" "d" | grep "$search" | pr -t -3 -w70
+		count="$(ls_dirs true "$path" "d" | grep "$search" | wc -l | xargs)"		
 	fi
 
 	print_div
@@ -427,6 +427,10 @@ m_history () {
 	esac
 	print_div
 }
+
+m_pip () {
+	echo "dddddd"
+}
 #
 # ===============================================================================
 #  Main
@@ -486,6 +490,9 @@ main () {
 				;;
 			-o | o | --open | open)
 				find "$EDITOR_PATH" -type f -name "${2}.*" -exec subl {} \;
+				;;
+			-pip | pip | --pip)
+				
 				;;				
 			-p | p | --paths | paths)
 				start_temp true "Paths:" "check 'em while you got 'em"
