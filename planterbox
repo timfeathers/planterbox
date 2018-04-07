@@ -118,6 +118,11 @@ start_temp () {
 		print_div
 	fi
 }
+# template to end.
+end_temp () { 
+	print_div
+	new_line
+}
 # new line printed
 new_line () {
 	printf "\\n"	
@@ -215,6 +220,7 @@ m_list () {
 	local search="$2"
 	local count=""
 
+	echo $path
 	ch_dir "$CD_TO_LS" "$path"
 	if [ "$search" = "" ]; then
 		ls_dirs true "$path" "d" | dent " " | pr -t -3 -w70
@@ -429,7 +435,14 @@ m_history () {
 }
 
 m_pip () {
-	echo "dddddd"
+	local path="$1"
+	local name="$2"
+
+	ch_dir true "$path"
+	if [ "$name" = "" ]; then
+		ls_dirs true "$path" "f" | dent " " | pr -t -3 -w70
+	fi
+	end_temp
 }
 #
 # ===============================================================================
@@ -492,7 +505,8 @@ main () {
 				find "$EDITOR_PATH" -type f -name "${2}.*" -exec subl {} \;
 				;;
 			-pip | pip | --pip)
-				
+				start_temp true "Requirements: " "$REQS_PATH"
+				m_pip "$REQS_PATH" "$2"				
 				;;				
 			-p | p | --paths | paths)
 				start_temp true "Paths:" "check 'em while you got 'em"
