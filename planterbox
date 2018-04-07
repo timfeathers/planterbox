@@ -465,18 +465,6 @@ m_pip () {
 main () {
 	if [ "$1" != "" ]; then
 		case $1 in
-			-l | l | ls | --list | list) #"l" and single letters not working, alias??
-				start_temp true "VE Directory: " "$VENVS_PATH"
-				m_list "$VENVS_PATH" "$2"
-				;;
-			-trash | --trash | trash)
-				start_temp true "Trash Directory: " "$TRASHCAN_PATH"
-				m_list "$TRASHCAN_PATH" "$2"
-				;;
-			-t | t | temp | -temp | --templates)
-				start_temp true "Templates Directory: " "$TEMPLATES_PATH"
-				m_list "$TEMPLATES_PATH"
-				;;
 			-c | c | --create | create)
 				start_temp "$VERBOSE" "Creating new Virtual Env: " "$2"
 				#m_create "$@" || return 1
@@ -485,12 +473,6 @@ main () {
 				;;
 			-cd | cd | --chdir | chdir)
 				m_cd "$2"
-				;;
-			-s | s | --search | search)
-				start_temp true "Searching Trash for: " "$2"
-				m_list "$TRASHCAN_PATH" "$2"
-				start_temp true "Searching Virtual Envs for: " "$2"
-				m_list "$VENVS_PATH" "$2"
 				;;
 			-cpy | cpy | --copy | copy) # 'cp' conflicts
 				start_temp "$VERBOSE" "Copying VE: " "$2 to $3"
@@ -501,21 +483,18 @@ main () {
 				start_temp "$VERBOSE" "Deleting Virtual Env: " "$2"
 				m_delete "$2"
 				;;
-			-rm | rm | --remove | remove)
-				start_temp "$VERBOSE" "Removing Virtual Env: " "$2"
-				m_remove "$2"
-				[ "$COLLECT_TRASH" = true ] && update_dotfile "$trash_proj" "$1" "$2" "$3"
-				end_temp
-				;;
-			-r | r | --restore | restore)
-				start_temp "$VERBOSE" "Restoring Virtual Env: " "$2"
-				m_restore "$2"
-				update_dotfile "$proj_path" "$1" "$2"					
-				;;
 			-h | h | --help | help)
 				start_temp true "Help: " "commands and options"
 				m_help
 				;;
+			-hs | hs | -hist | hist | --history | history)
+				# start_temp is variable, so in history function
+				m_history "$2"
+				;;				
+			-l | l | ls | --list | list) #"l" and single letters not working, alias??
+				start_temp true "VE Directory: " "$VENVS_PATH"
+				m_list "$VENVS_PATH" "$2"
+				;;				
 			-o | o | --open | open)
 				find "$EDITOR_PATH" -type f -name "${2}.*" -exec subl {} \;
 				;;
@@ -528,15 +507,35 @@ main () {
 				start_temp true "Paths:" "check 'em while you got 'em"
 				check_paths "false"
 				;;
-			-hs | hs | -hist | hist | --history | history)
-				# start_temp is variable, so in history function
-				m_history "$2"
+			-r | r | --restore | restore)
+				start_temp "$VERBOSE" "Restoring Virtual Env: " "$2"
+				m_restore "$2"
+				update_dotfile "$proj_path" "$1" "$2"					
+				;;				
+			-rm | rm | --remove | remove)
+				start_temp "$VERBOSE" "Removing Virtual Env: " "$2"
+				m_remove "$2"
+				[ "$COLLECT_TRASH" = true ] && update_dotfile "$trash_proj" "$1" "$2" "$3"
+				end_temp
 				;;
+			-s | s | --search | search)
+				start_temp true "Searching Trash for: " "$2"
+				m_list "$TRASHCAN_PATH" "$2"
+				start_temp true "Searching Virtual Envs for: " "$2"
+				m_list "$VENVS_PATH" "$2"
+				;;
+			-t | t | temp | -temp | --templates)
+				start_temp true "Templates Directory: " "$TEMPLATES_PATH"
+				m_list "$TEMPLATES_PATH"
+				;;			
+			-trash | --trash | trash)
+				start_temp true "Trash Directory: " "$TRASHCAN_PATH"
+				m_list "$TRASHCAN_PATH" "$2"
+				;;								
 			-v | v | --version | version)
 				printf "%s\\n" "$VERSION"
 				;;
-			*)
-				# start_temp true "Switching to Virtual Env: " $1
+			*) # load env given
 				m_load "$1"
 				;;
 		esac
@@ -554,7 +553,6 @@ main () {
 #
 # if config paths bad, exit
 check_paths "true" || return 1
-
 # log next?
 log_it "$1" "$2" "$3"
 # run main
