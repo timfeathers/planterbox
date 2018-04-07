@@ -220,7 +220,7 @@ m_list () {
 	local search="$2"
 	local count=""
 
-	echo $path
+	#echo $path
 	ch_dir "$CD_TO_LS" "$path"
 	if [ "$search" = "" ]; then
 		ls_dirs true "$path" "d" | dent " " | pr -t -3 -w70
@@ -437,12 +437,22 @@ m_history () {
 m_pip () {
 	local path="$1"
 	local name="$2"
+	local list_of_reqs=(${2})
 
 	ch_dir true "$path"
 	if [ "$name" = "" ]; then
-		ls_dirs true "$path" "f" | dent " " | pr -t -3 -w70
+		ls_dirs true "$path" "f" | dent ' ' | pr -t -3 -w70
+	elif [ "$name" = "l" ] || [ "$name" = "list" ]; then
+		ls_dirs true "$path" "f" | dent ' ' | pr -t -3 -w70
+		new_line
+		pip list | dent '  '
+	else
+		for var in ${list_of_reqs[@]}; do # install all reqs
+			#echo "-$var-" #testing
+			pip install -r "$var" | dent '  '
+			error_chk "Unable to install requirements file:" "Pip installed:" "$var"
+		done
 	fi
-	end_temp
 }
 #
 # ===============================================================================
@@ -491,6 +501,7 @@ main () {
 				start_temp "$VERBOSE" "Removing Virtual Env: " "$2"
 				m_remove "$2"
 				[ "$COLLECT_TRASH" = true ] && update_dotfile "$trash_proj" "$1" "$2" "$3"
+				end_temp
 				;;
 			-r | r | --restore | restore)
 				start_temp "$VERBOSE" "Restoring Virtual Env: " "$2"
@@ -504,11 +515,12 @@ main () {
 			-o | o | --open | open)
 				find "$EDITOR_PATH" -type f -name "${2}.*" -exec subl {} \;
 				;;
-			-pip | pip | --pip)
+			-p | p | -pip | pip | --pip)
 				start_temp true "Requirements: " "$REQS_PATH"
-				m_pip "$REQS_PATH" "$2"				
+				m_pip "$REQS_PATH" "$2"
+				end_temp
 				;;				
-			-p | p | --paths | paths)
+			--paths | paths)
 				start_temp true "Paths:" "check 'em while you got 'em"
 				check_paths "false"
 				;;
