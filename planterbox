@@ -469,9 +469,13 @@ main () {
 				start_temp true "VE Directory: " "$VENVS_PATH"
 				m_list "$VENVS_PATH" "$2"
 				;;
-			-t | t | --trash | trash)
+			-trash | --trash | trash)
 				start_temp true "Trash Directory: " "$TRASHCAN_PATH"
 				m_list "$TRASHCAN_PATH" "$2"
+				;;
+			-t | t | temp | -temp | --templates)
+				start_temp true "Templates Directory: " "$TEMPLATES_PATH"
+				m_list "$TEMPLATES_PATH"
 				;;
 			-c | c | --create | create)
 				start_temp "$VERBOSE" "Creating new Virtual Env: " "$2"
