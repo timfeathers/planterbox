@@ -268,14 +268,14 @@ m_create () {
 	local list_of_temps=(${2})
 	local editor_file_path
 
-	### Check name given is ok.
+	# Check name given is ok.
 	if array_contains "$name" "${taken_names[@]}"; then #TODO -make own func?
 		lert "Forbidden name/keyword:" "$name"
 		print_taken "$name"
 		return 1
 	fi
 
-	### Create project folder, check for template arg
+	# Create project folder, check for template arg
 	make_dir "$MAKE_PROJ_FOLDER" "$proj_path" || return 1
 	if [ "$template" = "" ]; then
 		copy_file "$USE_TEMPLATES" "$templ_default" "$proj_path" || return 1
@@ -288,7 +288,7 @@ m_create () {
 		#copy_file "$USE_TEMPLATES" "$templ_path" "$proj_path" || return 1
 	fi
 
-	### Copy editor files, replace strings in files
+	# Copy editor files, replace strings in files
 	for filename in $EDITOR_TEMPLATES_PATH*; do
 		extension="${filename##*.}"
 		editor_file_path="${EDITOR_PATH}${name}.${extension}"
@@ -297,17 +297,17 @@ m_create () {
 		error_chk "Unable to update editor template with sed." || return 1
 	done
 	
-	### Create VE and load depending
+	# Create VE and load depending
 	python3 -m venv "$env_path"
 	error_chk "Unable to create VE:" "Created Python3 venv:" "$name" || return 1
 	[ "$LOAD_ON_CREATE" = true ] && m_load "$name"		
 	ch_dir "$CD_ON_CREATE" "$proj_path"	|| return 1
 
-	### Update pip and install requirements
+	# Update pip and install requirements
 	upgrade_pip
 	reqs_pip "$reqs_default"
 
-	### Git init, and git commit
+	# Git init, and git commit
 	git_init "$name" || return 1
 	succ "Created VE:" "$name"	
 	print_div
@@ -486,7 +486,7 @@ main () {
 				;;
 			-o | o | --open | open)
 				find "$EDITOR_PATH" -type f -name "${2}.*" -exec subl {} \;
-				;;
+				;;				
 			-p | p | --paths | paths)
 				start_temp true "Paths:" "check 'em while you got 'em"
 				check_paths "false"
