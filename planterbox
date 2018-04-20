@@ -442,10 +442,12 @@ m_pip () {
 	ch_dir true "$path"
 	if [ "$name" = "" ]; then
 		ls_dirs true "$path" "f" | dent ' ' | pr -t -3 -w70
-	elif [ "$name" = "l" ] || [ "$name" = "list" ]; then
-		ls_dirs true "$path" "f" | dent ' ' | pr -t -3 -w70
 		new_line
-		pip list | dent '  '
+		pip list | dent '  '		
+	#elif [ "$name" = "l" ] || [ "$name" = "list" ]; then
+	#	ls_dirs true "$path" "f" | dent ' ' | pr -t -3 -w70
+	#	new_line
+	#	pip list | dent '  '
 	else
 		for var in ${list_of_reqs[@]}; do # install all reqs
 			#echo "-$var-" #testing
@@ -454,6 +456,7 @@ m_pip () {
 		done
 	fi
 }
+
 #
 # ===============================================================================
 #  Main

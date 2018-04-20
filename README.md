@@ -1,6 +1,6 @@
 # Doc for timve
 
-make on create templates load more than one in sequence
+x - make on create templates load more than one in sequence
 
 ## setup/install plan
 install
@@ -67,6 +67,7 @@ rename variables
 
 open editor on new??
 
+limit log size?: https://serverfault.com/questions/277948/easy-way-to-limit-file-size-stdout-on-a-shell-script-level?utm_medium=organic&utm_source=google_rich_qa&utm_campaign=google_rich_qa
 
 
 
