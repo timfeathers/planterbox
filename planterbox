@@ -202,7 +202,7 @@ log_it () {
 # Record history of commands for a project. this file identifies a project.
 update_dotfile () {
 	local name="$1"
-	proj_log="${name}.timve"
+	proj_log="${name}.plbox"
 	printf "%b\\t%b\\t%b\\t%b\\t%b\\n" "$(timestamp "\\t")" "$USER" "$2" "$3" "$4" >> "$proj_log"
 }
 

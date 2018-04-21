@@ -1,7 +1,5 @@
 # Doc for timve
 
-x - make on create templates load more than one in sequence
-
 ## setup/install plan
 install
 should put executable in usr/local/bin for all users
@@ -49,8 +47,11 @@ readme:         "~/.timve/README.md"
 
 ## notes
 
-new file: .timignore
-create in project folder on create() and update on rm, r, cpy
+x - make on create templates load more than one in sequence
+
+x- new file: .timignore
+    x- create in project folder on create() and update on rm, r, cpy
+    x- changed to .plbox
 
 will copy work with git files? do i need to re init instead for new copy
 
