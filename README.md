@@ -46,29 +46,3 @@ Files:
     readme:         "planterbox/README.md"
 
 ```
-
-## notes
-
-## todo
-x- make on create templates load more than one in sequence
-x- new file: .timignore
-    x- create in project folder on create() and update on rm, r, cpy
-    x- changed to .plbox
-x- upgrade pip on create? give choice in cfg?
-    x- pip install --upgrade pi
-
-## questions
-- will copy work with git files? do i need to re init instead for new copy
-- make more posix compliant?
-- rename accordingly, standards
-    - files
-    - variables
-- open editor on new??
-    - subl command, what for atom, etc
-- limit log size?: https://serverfault.com/questions/277948/easy-way-to-limit-file-size-stdout-on-a-shell-script-level?utm_medium=organic&utm_source=google_rich_qa&utm_campaign=google_rich_qa
-
-- setup/install plan
-    - create intall script to create all directories/place files
-    - should put executable in usr/local/bin for all users? prob not, or dev
-        + might be fitting that you can hacks script as you code/script
-
