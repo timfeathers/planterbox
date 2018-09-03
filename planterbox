@@ -1,6 +1,6 @@
 #!/bin/bash
 # ===============================================================================
-# Virtual Environment Utility - PlanterBox(muffintray)
+# Virtual Environment Utility - PlanterBox
 # ===============================================================================
 # This file must be used with "source path/ve.sh" *from bash*
 # you cannot run it directly. (from venv activate script,.. applies)
@@ -8,7 +8,7 @@
 # The script itself must be sourced to run correctly.
 # 
 # Add the following line to .bash_profile or .bashrc to employ the 've' alias
-# 	alias ve="source /Users/tim/Projects/timve/timve.sh $1 $2"
+# 	alias ve="source /Users/tim/Projects/timve/timve.sh $1 $2" <--UPDATE THIS
 # 	or?: export cmd..
 # 
 # -------------------------------------------------------------------------------
