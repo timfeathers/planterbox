@@ -1,4 +1,4 @@
-work in much progress
+... work in much progress
 
 # Doc for planterbox
 
@@ -46,3 +46,5 @@ Files:
     readme:         "planterbox/README.md"
 
 ```
+
+...
