@@ -1,3 +1,5 @@
+work in much progress
+
 # Doc for planterbox
 
 ## Options on Create:
@@ -19,6 +21,7 @@ allow customization though config,
         - will be able to navigate to through ve commands??
             - is easy access through finder/explorer/normal cl even necc?
 
+--still correct?
 Directories:
 
     base:               "planterbox/"
@@ -57,7 +60,6 @@ x- upgrade pip on create? give choice in cfg?
 ## questions
 - will copy work with git files? do i need to re init instead for new copy
 - make more posix compliant?
-    - might be too much work, at least get rid of common bashisms
 - rename accordingly, standards
     - files
     - variables
