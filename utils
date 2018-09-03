@@ -1,15 +1,7 @@
 #!/bin/bash
 # ===============================================================================
-# Clive ve for a name? find undefined
-# ===============================================================================
 # Utils
 #
-# script is becoming too large, seperate aspects for now o mo?
-# put things here not often changed or considered.
-# and source
-#
-## going through copies from timve.sh
-
 
 #
 # ===============================================================================
