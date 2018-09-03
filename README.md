@@ -1,4 +1,4 @@
-... work in much progress
+... work in progress
 
 # Doc for planterbox
 
@@ -46,5 +46,7 @@ Files:
     readme:         "planterbox/README.md"
 
 ```
+
+no setup/install yet
 
 ...
